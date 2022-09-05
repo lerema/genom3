@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2018,2020 LAAS/CNRS
+# Copyright (c) 2010-2018,2020,2022 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -550,38 +550,12 @@ namespace eval language::c {
 
         if {$locations} { append m [genloc $type] }
 	append m "\ntypedef struct $n {"
+        append m "\n  uint32_t _maximum, _length;"
 	if {[catch {$type length} l]} {
-	    append m "\n  uint32_t _maximum, _length;"
 	    append m "\n  [declarator [$type type] *_buffer];"
 	    append m "\n  void (*_release)(void *_buffer);"
 	} else {
-	    append m "\n  const uint32_t _maximum;"
-	    append m "\n  uint32_t _length;"
 	    append m "\n  [declarator [$type type] _buffer\[$l\]];"
-            # need explicit '_maximum' initialization if compiled by a C++
-            # compiler. Also need to override the default operator= because of
-            # the 'const _maximum'. The default copy constructor should be ok.
-            append m "\n# ifdef __cplusplus"
-            append m "\n  ${n}():_maximum($l) {}"
-            append m "\n  $n &operator=(const $n &x) {"
-            append m "\n    _length = x._length;"
-            append m "\n    for(unsigned i=0; i<_length; i++)"
-            switch -- [[$type type] kind] {
-              string - array {
-                if {[catch {[$type type] length} l]} {
-                  append m "\n      _buffer\[i\] = x._buffer\[i\];"
-                } else {
-                  append m "\n      for(unsigned j=0; j<$l; j++)"
-                  append m "\n        _buffer\[i\]\[j\] = x._buffer\[i\]\[j\];"
-                }
-              }
-              default {
-                append m "\n      _buffer\[i\] = x._buffer\[i\];"
-              }
-            }
-            append m "\n    return *this;"
-            append m "\n  };"
-            append m "\n# endif"
 	}
 	append m "\n} $n;"
 	return $f[guard $m $n]
