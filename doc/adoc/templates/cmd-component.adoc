@@ -110,6 +110,7 @@ link:cmd-dotgen{outfilesuffix}#dotgen_components[`dotgen components`].
 
 
 
+
 [[name]]
 === *$component name*
 
@@ -160,6 +161,12 @@ seconds. This is either the value defined in the `clock-rate`
 attributes of the `.gen` description, or the greatest common divisor
 of all the periods of periodic tasks if no `clock-rate` is defined. If
 the component has no periodic tasks, this raises an error.
+
+[[stack]]
+=== *$component stack*
+
+Return a link:cmd-type{outfilesuffix}[integer constant]
+representing the minimum stack size of all tasks of the component.
 
 
 

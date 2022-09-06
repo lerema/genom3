@@ -117,7 +117,9 @@ to target real-time embedded systems.
 +stack+::
   Defines the required stack size for this task (in bytes if no unit is
   given). The stack size should be big enough to run all codels that the
-  task manages. This may not be supported by all templates.
+  task manages. The property can also be specified for all tasks, including
+  implicit tasks defined by a template, at the component level. This may not
+  be used by all templates.
 
 
 

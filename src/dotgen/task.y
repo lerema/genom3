@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012,2014,2017 LAAS/CNRS
+ * Copyright (c) 2009-2012,2014,2017,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -97,7 +97,9 @@ task:
  * +stack+::
  *   Defines the required stack size for this task (in bytes if no unit is
  *   given). The stack size should be big enough to run all codels that the
- *   task manages. This may not be supported by all templates.
+ *   task manages. The property can also be specified for all tasks, including
+ *   implicit tasks defined by a template, at the component level. This may not
+ *   be used by all templates.
  */
 task_property:
   PERIOD const_expr time_unit semicolon

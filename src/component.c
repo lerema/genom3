@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2013,2015-2018 LAAS/CNRS
+ * Copyright (c) 2009-2013,2015-2018,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -312,7 +312,7 @@ comp_addprop(tloc l, prop_s p)
   switch(prop_kind(p)) {
     case PROP_DOC: case PROP_IDS: case PROP_VERSION: case PROP_LANG:
     case PROP_EMAIL: case PROP_REQUIRE: case PROP_CODELS_REQUIRE:
-    case PROP_CLOCKRATE: case PROP_THROWS:
+    case PROP_CLOCKRATE: case PROP_THROWS: case PROP_STACK:
       /* merge property */
       return prop_merge(comp_props(c), p, 0/*ignore_dup*/);
 
@@ -325,7 +325,7 @@ comp_addprop(tloc l, prop_s p)
       break;
 
     case PROP_PERIOD: case PROP_DELAY: case PROP_PRIORITY:
-    case PROP_SCHEDULING: case PROP_STACK: case PROP_VALIDATE:
+    case PROP_SCHEDULING: case PROP_VALIDATE:
     case PROP_SIMPLE_CODEL: case PROP_FSM_CODEL: case PROP_TASK:
     case PROP_INTERRUPTS: case PROP_BEFORE: case PROP_AFTER:
       parserror(l, "property %s may not be defined for %ss",
@@ -611,6 +611,7 @@ comp_dump(comp_s c, FILE *out)
           break;
 
         case PROP_CLOCKRATE:
+        case PROP_STACK:
           poptbrace;
           v = type_constvalue(prop_value(i.value));
           if (const_convert(&v, CST_FLOAT)) break;

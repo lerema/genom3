@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2014,2020 LAAS/CNRS
+ * Copyright (c) 2010-2014,2020,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -59,26 +59,27 @@ comp_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
   enum compidx {
     compidx_name, compidx_doc, compidx_ids, compidx_version, compidx_lang,
     compidx_email, compidx_require, compidx_crequire, compidx_clockrate,
-    compidx_throws, compidx_tasks, compidx_ports, compidx_services,
-    compidx_remotes, compidx_codels, compidx_types, compidx_digest,
-    compidx_loc, compidx_class
+    compidx_stack, compidx_throws, compidx_tasks, compidx_ports,
+    compidx_services, compidx_remotes, compidx_codels, compidx_types,
+    compidx_digest, compidx_loc, compidx_class
   };
   static const char *args[] = {
     [compidx_name] = "name", [compidx_doc] = "doc", [compidx_ids] = "ids",
     [compidx_version] = "version", [compidx_lang] = "language",
     [compidx_email] = "email", [compidx_require] = "require",
     [compidx_crequire] = "codels-require", [compidx_clockrate] = "clock-rate",
-    [compidx_throws] = "throws", [compidx_tasks] = "tasks",
-    [compidx_ports] = "ports", [compidx_services] = "services",
-    [compidx_remotes] = "remotes", [compidx_codels] = "codels",
-    [compidx_types] = "types", [compidx_digest] = "digest",
-    [compidx_loc] = "loc", [compidx_class] = "class", NULL
+    [compidx_stack] = "stack", [compidx_throws] = "throws",
+    [compidx_tasks] = "tasks", [compidx_ports] = "ports",
+    [compidx_services] = "services", [compidx_remotes] = "remotes",
+    [compidx_codels] = "codels", [compidx_types] = "types",
+    [compidx_digest] = "digest", [compidx_loc] = "loc",
+    [compidx_class] = "class", NULL
   };
   static const propkind argkind[] = {
     [compidx_doc] = PROP_DOC, [compidx_version] = PROP_VERSION,
     [compidx_lang] = PROP_LANG, [compidx_email] = PROP_EMAIL,
     [compidx_require] = PROP_REQUIRE, [compidx_crequire] = PROP_CODELS_REQUIRE,
-    [compidx_clockrate] = PROP_CLOCKRATE
+    [compidx_clockrate] = PROP_CLOCKRATE, [compidx_stack] = PROP_STACK
   };
   comp_s c = v;
   Tcl_Obj *r = NULL;
@@ -155,8 +156,14 @@ comp_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
        * attributes of the `.gen` description, or the greatest common divisor
        * of all the periods of periodic tasks if no `clock-rate` is defined. If
        * the component has no periodic tasks, this raises an error.
+       *
+       * [[stack]]
+       * === *$component stack*
+       *
+       * Return a link:cmd-type{outfilesuffix}[integer constant]
+       * representing the minimum stack size of all tasks of the component.
        */
-    case compidx_clockrate:
+    case compidx_clockrate: case compidx_stack:
       p = hash_find(comp_props(c), prop_strkind(argkind[i]));
       r = p ? Tcl_NewStringObj(type_genref(prop_value(p)), -1) : NULL;
       break;
