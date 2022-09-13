@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2013,2017 LAAS/CNRS
+ * Copyright (c) 2009-2013,2017,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -243,8 +243,8 @@ main(int argc, char *argv[])
 
   /* just preprocess input file */
   if (runopt.preproc) {
-    cpp_invoke(argv, 1);
-    status = cpp_wait();
+    status = cpp_invoke(argv, 1);
+    if (!status) status = cpp_wait();
     goto done;
   }
 
@@ -259,7 +259,8 @@ main(int argc, char *argv[])
       status = 2; goto done;
     }
     dotgen_input(DG_INPUT_FILE, pipefd[0]);
-    cpp_invoke(argv, pipefd[1]);
+    status = cpp_invoke(argv, pipefd[1]);
+    if (status) goto done;
 
     s = dotgenparse();
     status = cpp_wait();

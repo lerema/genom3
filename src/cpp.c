@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012,2017-2018 LAAS/CNRS
+ * Copyright (c) 2009-2012,2017-2018,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -130,10 +130,7 @@ cpp_invoke(char *in[], int out)
   for(; *in; in++) {
     char rpath[PATH_MAX];
 
-    if (!realpath(*in, rpath)) {
-      warnx("cannot find input file `%s'", *in); warn(NULL);
-      errno = EIO; goto err;
-    }
+    if (!realpath(*in, rpath)) { warn("%s", *in); goto err; }
 
     fprintf(infile, "#include \"%s\"\n", rpath);
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2014,2017,2020 LAAS/CNRS
+ * Copyright (c) 2010-2014,2017,2020,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -301,12 +301,16 @@ dg_parse(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
       path[i] = NULL;
 
       if (pipe(pipefd) < 0) {
-        Tcl_AppendResult(interp,
-                         "cannot create a pipe to cpp:", strerror(errno), NULL);
+        Tcl_AppendResult(
+          interp, "cannot create a pipe to cpp: ", strerror(errno), NULL);
         return TCL_ERROR;
       }
       dotgen_input(DG_INPUT_FILE, pipefd[0]);
-      cpp_invoke(path, pipefd[1]);
+      if (cpp_invoke(path, pipefd[1])) {
+        Tcl_AppendResult(
+          interp, "cannot parse input: ", strerror(errno), NULL);
+        return TCL_ERROR;
+      }
       s = dotgenparse();
       if (cpp_wait()) s = 2;
       break;
