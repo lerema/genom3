@@ -92,7 +92,7 @@ way as a '#define' directive would do it. This option is passed as-is to the
 If you are invoking genom from the shell, you may have to use the shell
 quoting character to protect shell's special characters such as spaces.
 +
-An implicit macro '__GENOM__' is always defined and contains the
+An implicit macro '\\__GENOM__' is always defined and contains the
 version of the genom program. This can be used to divert some lines in
 source files meant to be included by other tools that genom, and that
 contain syntax that genom does not understand.
@@ -135,8 +135,8 @@ This option is useful only for templates not installed in the genom
 standard directories, i.e. 'share/genom/templates' or
 'share/genom/site-templates'.
 +
-Each component of 'path' is searched for files matching '*/template.tcl', where
-'*' is interpreted as the template name.
+Each component of 'path' is searched for files matching '\*/template.tcl',
+where '*' is interpreted as the template name.
 
 *-s*, *--sysdir=dir*::
 // use dir as the directory for generator system files
