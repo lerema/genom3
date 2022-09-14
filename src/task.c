@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013,2016 LAAS/CNRS
+ * Copyright (c) 2012-2013,2016,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -133,12 +133,12 @@ task_create(tloc l, const char *name, hash_s props)
       return NULL;
     }
 
-    t->loc = l;
     t->name = string(name);
     t->component = comp;
     t->props = props;
     t->fsm = NULL;
   }
+  t->loc = l; /* update location in case of reopening */
 
   /* set codel's parent task and (NULL) service */
   for(hash_first(props, &i); i.current; hash_next(&i))
