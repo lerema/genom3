@@ -376,8 +376,9 @@ prop_merge(hash_s p, prop_s i, int ignore_dup)
     case PROP_VALIDATE:
     case PROP_SIMPLE_CODEL:
     case PROP_FSM_CODEL:
-      i->codel = codel_clone(prop_codel(i));
-      if (!i->codel) e = errno;
+      i = prop_newcodel(
+        prop_loc(i), prop_kind(i), codel_clone(prop_codel(i)));
+      if (!i || !i->codel) e = errno;
       break;
 
     default: break;
