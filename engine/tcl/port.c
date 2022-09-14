@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2013,2017,2020 LAAS/CNRS
+ * Copyright (c) 2010-2013,2017,2020,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -70,14 +70,20 @@ port_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 
   int i = portidx_name; /* return name by default */
 
-  if (objc > 2) {
-    Tcl_WrongNumArgs(interp, 0, objv, "$port subcommand");
-    return TCL_ERROR;
-  }
   if (objc > 1) {
     s = Tcl_GetIndexFromObj(interp, objv[1], args, "subcommand", 0, &i);
     if (s != TCL_OK) return s;
   }
+  if (i == portidx_loc) {
+    if (objc > 3) {
+      Tcl_WrongNumArgs(interp, 2, objv, "?element?");
+      return TCL_ERROR;
+    }
+  } else if (objc > 2) {
+    Tcl_WrongNumArgs(interp, 0, objv, "$port subcommand");
+    return TCL_ERROR;
+  }
+
   switch(i) {
     /*/
      * [[name]]
@@ -179,21 +185,18 @@ port_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 
     /*/
      * [[loc]]
-     * === *$port loc*
+     * === *$port loc* [file|line|column|context]
      *
      * Return a list describing the source location where that port is
-     * defined. The list contains three elements: the file name, the line
-     * number and the column number.
+     * defined. The list contains four elements: the file name, the line
+     * number, the column number and the original component context of the
+     * definition. If an optional argument is given, only the corresponding
+     * element is returned.
      */
-    case portidx_loc: {
-      Tcl_Obj *l[3] = {
-	Tcl_NewStringObj(port_loc(p).file, -1),
-	Tcl_NewIntObj(port_loc(p).line),
-	Tcl_NewIntObj(port_loc(p).col),
-      };
-      r = Tcl_NewListObj(3, l);
+    case portidx_loc:
+      r = tloc_item(interp, objc > 2 ? objv[2]:NULL, port_loc(p));
+      if (!r) return TCL_ERROR;
       break;
-    }
 
     /*/
      * [[class]]

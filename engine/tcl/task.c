@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010,2012-2015,2020 LAAS/CNRS
+ * Copyright (c) 2010,2012-2015,2020,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -81,6 +81,11 @@ task_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
   if (i == taskidx_fsm) {
     if (objc > 3) {
       Tcl_WrongNumArgs(interp, 0, objv, "$task fsm event");
+      return TCL_ERROR;
+    }
+  } else if (i == taskidx_loc) {
+    if (objc > 3) {
+      Tcl_WrongNumArgs(interp, 0, objv, "$task loc ?element?");
       return TCL_ERROR;
     }
   } else {
@@ -291,21 +296,18 @@ task_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 
     /*/
      * [[loc]]
-     * === *$task loc*
+     * === *$task loc* [file|line|column|context]
      *
      * Return a list describing the source location where that task is
-     * defined. The list contains three elements: the file name, the line
-     * number and the column number.
+     * defined. The list contains four elements: the file name, the line
+     * number, the column number and the original component context of the
+     * definition. If an optional argument is given, only the corresponding
+     * element is returned.
      */
-    case taskidx_loc: {
-      Tcl_Obj *l[3] = {
-	Tcl_NewStringObj(task_loc(t).file, -1),
-	Tcl_NewIntObj(task_loc(t).line),
-	Tcl_NewIntObj(task_loc(t).col),
-      };
-      r = Tcl_NewListObj(3, l);
+    case taskidx_loc:
+      r = tloc_item(interp, objc > 2 ? objv[2]:NULL, task_loc(t));
+      if (!r) return TCL_ERROR;
       break;
-    }
 
     /*/
      * [[class]]

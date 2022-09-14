@@ -135,6 +135,11 @@ link:cmd-dotgen{outfilesuffix}#dotgen_types[`dotgen types`].
 
 
 
+
+
+
+
+
 [[kind]]
 === *$type kind*
 
@@ -253,8 +258,6 @@ Return the nested types defined by the given type
 
 
 
-
-
 [[types]]
 === *$type types* ['filter']
 
@@ -317,14 +320,10 @@ for `typedef`.
 
 
 
-
-
 [[length]]
 === *$type length*
 
 Return the length of an `array`, `sequence` or `string` type.
-
-
 
 
 
@@ -363,14 +362,10 @@ Return the value associated with a `const` type.
 
 
 
-
-
 [[valuekind]]
 === *$type valuekind*
 
 Return the nature of the value associated with a `const` type.
-
-
 
 
 
@@ -406,8 +401,6 @@ Return the discriminator of the given `union`.
 
 
 
-
-
 [[port]]
 === *$type port*
 
@@ -422,14 +415,10 @@ Return the port object referenced by the given `port`.
 
 
 
-
-
 [[remote]]
 === *$type remote*
 
 Return the remote object referenced by the given `remote`.
-
-
 
 
 
@@ -639,17 +628,13 @@ masquerade`].
 
 
 [[loc]]
-=== *$type loc*
+=== *$type loc* [file|line|column|context]
 
-Return list describing the source location where that type is
-defined. The list contains three elements: the file name, the line
-number and the column number.
-
-
-
-
-
-
+Return a list describing the source location where that type is
+defined. The list contains four elements: the file name, the line
+number, the column number and the original component context of the
+definition. If an optional argument is given, only the corresponding
+element is returned.
 
 
 

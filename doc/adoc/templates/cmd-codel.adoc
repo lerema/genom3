@@ -103,6 +103,11 @@ by other procedures.
 
 
 
+
+
+
+
+
 [[name]]
 === *$codel name*
 
@@ -271,14 +276,13 @@ link:cmd-language{outfilesuffix}#invoke[`language invoke`].
 
 
 [[loc]]
-=== *$codel loc*
-Return the location of the definition of the codel in the source file,
-as a triplet { `file` `line` `column` }.
+=== *$codel loc* [file|line|column|context]
 
-
-
-
-
+Return a list describing the source location where that codel is
+defined. The list contains four elements: the file name, the line
+number, the column number and the original component context of the
+definition. If an optional argument is given, only the corresponding
+element is returned.
 
 
 

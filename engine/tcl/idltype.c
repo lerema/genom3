@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2014,2017-2018,2020 LAAS/CNRS
+ * Copyright (c) 2010-2014,2017-2018,2020,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -120,6 +120,11 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
      * additional parameters */
     if (objc < 3 || objc > 4) {
       Tcl_WrongNumArgs(interp, 2, objv, "kind ?var?");
+      return TCL_ERROR;
+    }
+  } else if (i == typeidx_loc) {
+    if (objc > 3) {
+      Tcl_WrongNumArgs(interp, 2, objv, "?element?");
       return TCL_ERROR;
     }
   } else {
@@ -634,21 +639,17 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 
     /*/
      * [[loc]]
-     * === *$type loc*
+     * === *$type loc* [file|line|column|context]
      *
-     * Return list describing the source location where that type is
-     * defined. The list contains three elements: the file name, the line
-     * number and the column number.
+     * Return a list describing the source location where that type is
+     * defined. The list contains four elements: the file name, the line
+     * number, the column number and the original component context of the
+     * definition. If an optional argument is given, only the corresponding
+     * element is returned.
      */
     case typeidx_loc:
-      if (!type_loc(t).file) { r = NULL; } else {
-	Tcl_Obj *l[3] = {
-	  Tcl_NewStringObj(type_loc(t).file, -1),
-	  Tcl_NewIntObj(type_loc(t).line),
-	  Tcl_NewIntObj(type_loc(t).col),
-	};
-	r = Tcl_NewListObj(3, l);
-      }
+      r = tloc_item(interp, objc > 2 ? objv[2]:NULL, type_loc(t));
+      if (!r) return TCL_ERROR;
       break;
 
     /*/

@@ -95,7 +95,7 @@ comp_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
   /* 'ports', 'types' and 'digest' subcommands can have additional parameters,
    * other subcommand don't have any. */
   if (i != compidx_ports && i != compidx_codels && i != compidx_types &&
-      i != compidx_digest && objc > 2) {
+      i != compidx_digest && i != compidx_loc && objc > 2) {
       Tcl_WrongNumArgs(interp, 0, objv, "$component subcommand");
       return TCL_ERROR;
   }
@@ -479,21 +479,18 @@ comp_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 
     /*/
      * [[loc]]
-     * === *$component loc*
+     * === *$component loc* [file|line|column|context]
      *
      * Return a list describing the source location where that component is
-     * defined. The list contains three elements: the file name, the line
-     * number and the column number.
+     * defined. The list contains four elements: the file name, the line
+     * number, the column number and the original component context of the
+     * definition. If an optional argument is given, only the corresponding
+     * element is returned.
      */
-    case compidx_loc: {
-      Tcl_Obj *l[3] = {
-	Tcl_NewStringObj(comp_loc(c).file, -1),
-	Tcl_NewIntObj(comp_loc(c).line),
-	Tcl_NewIntObj(comp_loc(c).col),
-      };
-      r = Tcl_NewListObj(3, l);
+    case compidx_loc:
+      r = tloc_item(interp, objc > 2 ? objv[2]:NULL, comp_loc(c));
+      if (!r) return TCL_ERROR;
       break;
-    }
 
     /*/
      * [[class]]

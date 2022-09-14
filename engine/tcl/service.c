@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010,2012-2015,2020 LAAS/CNRS
+ * Copyright (c) 2010,2012-2015,2020,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -85,6 +85,11 @@ service_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
   if (i == serviceidx_fsm) {
     if (objc > 3) {
       Tcl_WrongNumArgs(interp, 0, objv, "$service fsm ?event?");
+      return TCL_ERROR;
+    }
+  } else if (i == serviceidx_loc) {
+    if (objc > 3) {
+      Tcl_WrongNumArgs(interp, 0, objv, "$service loc ?element?");
       return TCL_ERROR;
     }
   } else if (i != serviceidx_params && i != serviceidx_codels) {
@@ -482,21 +487,18 @@ service_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 
     /*/
      * [[loc]]
-     * === *$service loc*
+     * === *$service loc* [file|line|column|context]
      *
      * Return a list describing the source location where that service is
-     * defined. The list contains three elements: the file name, the line
-     * number and the column number.
+     * defined. The list contains four elements: the file name, the line
+     * number, the column number and the original component context of the
+     * definition. If an optional argument is given, only the corresponding
+     * element is returned.
      */
-    case serviceidx_loc: {
-      Tcl_Obj *l[3] = {
-	Tcl_NewStringObj(service_loc(s).file, -1),
-	Tcl_NewIntObj(service_loc(s).line),
-	Tcl_NewIntObj(service_loc(s).col),
-      };
-      r = Tcl_NewListObj(3, l);
+    case serviceidx_loc:
+      r = tloc_item(interp, objc > 2 ? objv[2]:NULL, service_loc(s));
+      if (!r) return TCL_ERROR;
       break;
-    }
 
     /*/
      * [[class]]

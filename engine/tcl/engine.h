@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010,2012-2013 LAAS/CNRS
+ * Copyright (c) 2010,2012-2013,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution and use  in source  and binary  forms,  with or without
@@ -107,5 +107,31 @@ char *	initer_genref(initer_s p);
 int	engine_createcmd(Tcl_Interp *interp, Tcl_Interp *slave,
 		const char *cmd, Tcl_ObjCmdProc *proc, ClientData data);
 int	engine_export(Tcl_Interp *interp, Tcl_Interp *slave);
+
+static inline Tcl_Obj *
+tloc_item(Tcl_Interp *interp, Tcl_Obj *kwd, const tloc tloc)
+{
+  static const char *kwds[] = {
+    [0] = "file", [1] = "line", [2] = "column", [3] = "context",
+    NULL
+  };
+
+  Tcl_Obj *l[] = {
+    Tcl_NewStringObj(tloc.file ? tloc.file : "", -1),
+    Tcl_NewIntObj(tloc.line),
+    Tcl_NewIntObj(tloc.col),
+    Tcl_NewStringObj(tloc.context ? comp_genref(tloc.context) : "", -1)
+  };
+  int s, n;
+
+  if (kwd == NULL) return Tcl_NewListObj(sizeof(l)/sizeof(*l), l);
+
+  s = Tcl_GetIndexFromObj(interp, kwd, kwds, "element", 0, &n);
+  if (s != TCL_OK) return NULL;
+
+  assert(n >= 0 && n < sizeof(l)/sizeof(*l));
+  return l[n];
+};
+
 
 #endif /* H_ENGINE */

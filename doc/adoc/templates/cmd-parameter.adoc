@@ -96,6 +96,11 @@ link:cmd-codel{outfilesuffix}#params[`$codel params`].
 
 
 
+
+
+
+
+
 [[name]]
 === *$param name*
 
@@ -287,16 +292,13 @@ if `kind` is equal to `compound`.
 
 
 [[loc]]
-=== *$param loc*
+=== *$param loc* [file|line|column|context]
 
 Return a list describing the source location where that parameter is
-defined. The list contains three elements: the file name, the line
-number and the column number.
-
-
-
-
-
+defined. The list contains four elements: the file name, the line
+number, the column number and the original component context of the
+definition. If an optional argument is given, only the corresponding
+element is returned.
 
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2013,2015,2020 LAAS/CNRS
+ * Copyright (c) 2011-2013,2015,2020,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -88,6 +88,11 @@ codel_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
   } else if (i == codelidx_invoke) {
     if (objc != 3) {
       Tcl_WrongNumArgs(interp, 2, objv, "params");
+      return TCL_ERROR;
+    }
+  } else if (i == codelidx_loc) {
+    if (objc > 3) {
+      Tcl_WrongNumArgs(interp, 0, objv, "$codel loc ?element?");
       return TCL_ERROR;
     }
   } else {
@@ -266,19 +271,18 @@ codel_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 
     /*/
      * [[loc]]
-     * === *$codel loc*
-     * Return the location of the definition of the codel in the source file,
-     * as a triplet { `file` `line` `column` }.
+     * === *$codel loc* [file|line|column|context]
+     *
+     * Return a list describing the source location where that codel is
+     * defined. The list contains four elements: the file name, the line
+     * number, the column number and the original component context of the
+     * definition. If an optional argument is given, only the corresponding
+     * element is returned.
      */
-    case codelidx_loc: {
-      Tcl_Obj *l[3] = {
-	Tcl_NewStringObj(codel_loc(c).file, -1),
-	Tcl_NewIntObj(codel_loc(c).line),
-	Tcl_NewIntObj(codel_loc(c).col),
-      };
-      r = Tcl_NewListObj(3, l);
+    case codelidx_loc:
+      r = tloc_item(interp, objc > 2 ? objv[2]:NULL, codel_loc(c));
+      if (!r) return TCL_ERROR;
       break;
-    }
 
     /*/
      * [[class]]

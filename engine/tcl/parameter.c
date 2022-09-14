@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2013,2020 LAAS/CNRS
+ * Copyright (c) 2010-2013,2020,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -80,6 +80,11 @@ param_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
   if (i == paramidx_initer) {
     if (objc > 3) {
       Tcl_WrongNumArgs(interp, 0, objv, "$param initializer ?type?");
+      return TCL_ERROR;
+    }
+  } else if (i == paramidx_loc) {
+    if (objc > 3) {
+      Tcl_WrongNumArgs(interp, 2, objv, "?element?");
       return TCL_ERROR;
     }
   } else {
@@ -282,21 +287,18 @@ param_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 
     /*/
      * [[loc]]
-     * === *$param loc*
+     * === *$param loc* [file|line|column|context]
      *
      * Return a list describing the source location where that parameter is
-     * defined. The list contains three elements: the file name, the line
-     * number and the column number.
+     * defined. The list contains four elements: the file name, the line
+     * number, the column number and the original component context of the
+     * definition. If an optional argument is given, only the corresponding
+     * element is returned.
      */
-    case paramidx_loc: {
-      Tcl_Obj *l[3] = {
-	Tcl_NewStringObj(param_loc(p).file, -1),
-	Tcl_NewIntObj(param_loc(p).line),
-	Tcl_NewIntObj(param_loc(p).col),
-      };
-      r = Tcl_NewListObj(3, l);
+    case paramidx_loc:
+      r = tloc_item(interp, objc > 2 ? objv[2]:NULL, param_loc(p));
+      if (!r) return TCL_ERROR;
       break;
-    }
 
     /*/
      * [[class]]

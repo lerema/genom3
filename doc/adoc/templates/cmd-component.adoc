@@ -484,16 +484,13 @@ be included (true) or excluded (false) from the hash computation.
 
 
 [[loc]]
-=== *$component loc*
+=== *$component loc* [file|line|column|context]
 
 Return a list describing the source location where that component is
-defined. The list contains three elements: the file name, the line
-number and the column number.
-
-
-
-
-
+defined. The list contains four elements: the file name, the line
+number, the column number and the original component context of the
+definition. If an optional argument is given, only the corresponding
+element is returned.
 
 
 
