@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2014,2017 LAAS/CNRS
+ * Copyright (c) 2009-2014,2017,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -55,6 +55,7 @@ component: COMPONENT component_name component_body semicolon
   {
     comp_s c = comp_pop();
     if (c) assert(c == $2);
+    curloc.context = NULL;
   }
 ;
 
@@ -66,6 +67,7 @@ component_name: identifier
       parserror(@1, "dropped component '%s'", $1);
       YYABORT;
     }
+    curloc.context = $$;
   }
 ;
 

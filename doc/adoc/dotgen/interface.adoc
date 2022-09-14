@@ -82,6 +82,8 @@ are to be `provided` or `used` by components.
 
 
 
+
+
 In addition to regular component properties, an interface can also define
 the following properties:
 

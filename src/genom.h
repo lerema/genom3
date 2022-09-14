@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2015,2017 LAAS/CNRS
+ * Copyright (c) 2009-2015,2017,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -64,10 +64,12 @@ int	cpp_wait(void);
 /* --- parsers ------------------------------------------------------------- */
 
 typedef struct hash_s *hash_s;
+typedef struct comp_s *comp_s;
 
 typedef struct tloc {
   char *file;
   int line, col;
+  comp_s context;
 } tloc;
 
 typedef enum dotgen_input_kind {
@@ -410,7 +412,7 @@ typedef enum svckind {
   S_FUNCTION,
   S_ACTIVITY
 } svckind;
-typedef struct comp_s *comp_s;
+
 typedef struct service_s *service_s;
 typedef struct param_s *param_s;
 

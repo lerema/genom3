@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2015,2017 LAAS/CNRS
+ * Copyright (c) 2009-2015,2017,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -75,7 +75,7 @@
 
 #include "genom3-dotgen.h"
 
-   YYLTYPE curloc = { .file = NULL, .line = 1, .col = 0 };
+   YYLTYPE curloc = { .file = NULL, .line = 1, .col = 0, .context = NULL };
    int task_p = 0;
 
 #define YY_USER_ACTION  yylloc->col += yyleng; curloc = *yylloc;

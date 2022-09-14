@@ -111,6 +111,8 @@ defined within the component scope.
 
 
 
+
+
 A number of properties can be attached to a component:
 
 ****

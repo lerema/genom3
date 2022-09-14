@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012,2014,2017 LAAS/CNRS
+ * Copyright (c) 2009-2012,2014,2017,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -44,6 +44,7 @@ interface: INTERFACE interface_scope component_body semicolon
   {
     comp_s c = comp_pop();
     if (c) assert(c == $2);
+    curloc.context = NULL;
   }
 ;
 
@@ -55,6 +56,7 @@ interface_scope: identifier
       parserror(@1, "dropped interface '%s'", $1);
       YYABORT;
     }
+    curloc.context = $$;
   }
 ;
 
