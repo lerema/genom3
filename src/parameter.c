@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2015 LAAS/CNRS
+ * Copyright (c) 2010-2015,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -193,7 +193,13 @@ param_newlocal(tloc l, pdir dir, const char *name, clist_s member,
     parserror(l, "no such service parameter '%s'", i.value->s);
     return NULL;
   }
-  assert(type);
+  switch(type_kind(type)) {
+    case IDL_EVENT: case IDL_PAUSE_EVENT: case IDL_PORT: case IDL_REMOTE:
+      parserror(l, "%s %s not allowed for parameter `%s'",
+                type_strkind(type_kind(type)), type_fullname(type), i.value->s);
+      return NULL;
+    default: break;
+  }
 
   /* create param */
   clist_next(&i);
