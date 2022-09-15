@@ -1,5 +1,5 @@
 <'
-# Copyright (c) 2010-2013 LAAS/CNRS
+# Copyright (c) 2010-2013,2022 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -25,15 +25,6 @@
 if {[llength $argv] != 2} { error "expected arguments: component task" }
 lassign $argv component task
 
-# mapcar-like proc
-proc map {lambda list} {
-    set result {}
-    foreach item $list {
-	lappend result [apply $lambda $item]
-    }
-    return $result
-}
-
 lang c++
 
 # generate copyright notice (if any)
@@ -54,9 +45,9 @@ if {$task ne ""} {'>
 
 /** Codel <"[$codel name]"> of task <"[$task name]">.
  *
- * Triggered by <"[join [map {e {return [$e name]}} [$codel triggers]] {, }]">.
- * Yields to <"[join [map {e {return [$e name]}} [$codel yields]] {, }]">.
- * Throws <"[join [map {e {return [$e name]}} [$task throws]] {, }]">.
+ * Triggered by <"[join [lmap e [$codel triggers] {$e cname}] {, }]">.
+ * Yields to <"[join [lmap e [$codel yields] {$e cname}] {, }]">.
+ * Throws <"[join [lmap e [$task throws] {$e cname}] {, }]">.
  */
 <"[$codel signature \n]">
 {
@@ -79,8 +70,8 @@ if {$task eq ""} {
 
 /** Validation codel <"[$codel name]"> of service <"[$service name]">.
  *
- * Returns <"[join [map {e {return [$e name]}} [$codel yields]] {, }]">.
- * Throws <"[join [map {e {return [$e name]}} [$service throws]] {, }]">.
+ * Returns <"[join [lmap e [$codel yields] {$e cname}] {, }]">.
+ * Throws <"[join [lmap e [$service throws] {$e cname}] {, }]">.
  */
 <"[$codel signature \n]">
 {
@@ -105,9 +96,9 @@ foreach service [$component services] {
 
 /** Codel <"[$codel name]"> of service <"[$service name]">.
  *
- * Triggered by <"[join [map {e {return [$e name]}} [$codel triggers]] {, }]">.
- * Yields to <"[join [map {e {return [$e name]}} [$codel yields]] {, }]">.
- * Throws <"[join [map {e {return [$e name]}} [$service throws]] {, }]">.
+ * Triggered by <"[join [lmap e [$codel triggers] {$e cname}] {, }]">.
+ * Yields to <"[join [lmap e [$codel yields] {$e cname}] {, }]">.
+ * Throws <"[join [lmap e [$service throws] {$e cname}] {, }]">.
  */
 <"[$codel signature \n]">
 {

@@ -25,15 +25,6 @@
 if {[llength $argv] != 2} { error "expected arguments: component task" }
 lassign $argv component task
 
-# mapcar-like proc
-proc map {lambda list} {
-    set result {}
-    foreach item $list {
-	lappend result [apply $lambda $item]
-    }
-    return $result
-}
-
 lang c
 
 # generate copyright notice (if any)
@@ -57,13 +48,13 @@ if {$task ne ""} {'>
 /** Codel <"[$codel name]"> of task <"[$task name]">.
  *
 <'    if {[llength [$codel triggers]]} {'>
-<'      set triggers [join [map {e {return [$e cname]}} [$codel triggers]] {, }]'>
+<'      set triggers [join [lmap e [$codel triggers] {$e cname}] {, }]'>
 <"[wrap " * Triggered by $triggers." { * }]">
 <'    }'>
-<'    set yields [join [map {e {return [$e cname]}} [$codel yields]] {, }]'>
+<'    set yields [join [lmap e [$codel yields] {$e cname}] {, }]'>
 <"[wrap " * Yields to $yields." { *           }]">
 <'    if {[llength [$task throws]]} {'>
-<'      set throws [join [map {e {return [$e cname]}} [$task throws]] {, }]'>
+<'      set throws [join [lmap e [$task throws] {$e cname}] {, }]'>
 <"[wrap " * Throws $throws." { *        }]">
 <'    }'>
  */
@@ -96,7 +87,7 @@ if {$task eq ""} {
 /** Validation codel <"[$codel name]"> of <"[$service kind]"> <"[$service name]">.
  *
  * Returns genom_ok.
-<'   set throws [join [map {e {return [$e cname]}} [$service throws]] {, }]'>
+<'   set throws [join [lmap e [$service throws] {$e cname}] {, }]'>
 <"[wrap " * Throws $throws." { * }]">
  */
 <'
@@ -130,17 +121,17 @@ foreach service [$component services] {
 /** Codel <"[$codel name]"> of <"[$service kind]"> <"[$service name]">.
  *
 <'   if {[llength [$codel triggers]]} {'>
-<'     set triggers [join [map {e {return [$e cname]}} [$codel triggers]] {, }]'>
+<'     set triggers [join [lmap e [$codel triggers] {$e cname}] {, }]'>
 <"[wrap " * Triggered by $triggers." { * }]">
 <'   }'>
 <'   if {[llength [$codel yields]]} {'>
-<'    set yields [join [map {e {return [$e cname]}} [$codel yields]] {, }]'>
+<'    set yields [join [lmap e [$codel yields] {$e cname}] {, }]'>
 <"[wrap " * Yields to $yields." { *           }]">
 <'   } else {'>
  * Returns genom_ok.
 <'   }'>
 <'   if {[llength [$service throws]]} {'>
-<'     set throws [join [map {e {return [$e cname]}} [$service throws]] {, }]'>
+<'     set throws [join [lmap e [$service throws] {$e cname}] {, }]'>
 <"[wrap " * Throws $throws." { *        }]">
 <'   }'>
  */

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2014,2017,2019-2020 LAAS/CNRS
+# Copyright (c) 2010-2014,2017,2019-2020,2022 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -22,6 +22,17 @@
 #                                           Anthony Mallet on Fri Jan  8 2010
 #
 package require Tcl 8.5
+
+# tcl<8.6 is missing this bit, provide a good-enough replacement as long as
+# only 8.5 is required.
+if {[info command lmap] eq {}} {
+  proc lmap {var& list body} {
+    upvar 1 ${var&} var
+    set res [list]
+    foreach var $list {lappend res [uplevel 1 $body]}
+    set res
+  }
+}
 
 namespace eval engine {
     #/
