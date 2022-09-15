@@ -22,8 +22,8 @@
 #                                           Anthony Mallet on Thu Jul  8 2010
 
 # check arguments
-if {[llength $argv] != 2} { error "expected arguments: component task" }
-lassign $argv component task
+if {[llength $argv] != 3} { error "expected arguments: component task extern" }
+lassign $argv component task extern
 
 lang c++
 
@@ -40,7 +40,8 @@ if {$task ne ""} {'>
 
 
 /* <"[--- Task [$task name] ---------------------------------------------]"> */
-<' foreach codel [$task codels] { '>
+<'  foreach codel [$task codels] { '>
+<'    if {[$codel loc context] ni $extern} continue'>
 
 
 /** Codel <"[$codel name]"> of task <"[$task name]">.
@@ -54,19 +55,22 @@ if {$task ne ""} {'>
   /* skeleton sample: insert your code */
   /* skeleton sample */ return <"[[lindex [$codel yields] 0] cname]">;
 }
-<' } '>
-<'}
-
+<'  }'>
+<'}'>
+<'
 
 # --- Validation codels --------------------------------------------------
 
-if {$task eq ""} {
-  foreach service [$component services] {
-    if {[llength [$service validate]] == 0} continue'>
+'>
+<'if {$task eq ""} {'>
+<'  foreach service [$component services] {'>
+<'    if {[$service loc context] ni $extern} continue'>
+<'    if {[llength [$service validate]] == 0} continue'>
 
 
 /* <"[--- Service [$service name] ---------------------------------------]"> */
-<'       foreach codel [$service validate] { '>
+<'    foreach codel [$service validate] { '>
+<'      if {[$codel loc context] ni $extern} continue'>
 
 /** Validation codel <"[$codel name]"> of service <"[$service name]">.
  *
@@ -78,21 +82,23 @@ if {$task eq ""} {
   /* skeleton sample: insert your code */
   /* skeleton sample */ return <"[[lindex [$codel yields] 0] cname]">;
 }
-<'       } '>
 <'    } '>
-<'}
+<'  } '>
+<'}'>
+<'
 
 # --- Services codels ----------------------------------------------------
 
-foreach service [$component services] {
-  if {[catch {$service task} t]} { set t "" }
-  if {$t != $task || [llength [$service codels]] == 0} {
-    continue
-  } '>
+'>
+<'foreach service [$component services] {'>
+<'  if {[$service loc context] ni $extern} continue'>
+<'  if {[catch {$service task} t]} { set t "" }'>
+<'  if {$t != $task || [llength [$service codels]] == 0} continue'>
 
 
 /* <"[--- Service [$service name] ---------------------------------------]"> */
 <'    foreach codel [$service codels] { '>
+<'      if {[$codel loc context] ni $extern} continue'>
 
 /** Codel <"[$codel name]"> of service <"[$service name]">.
  *

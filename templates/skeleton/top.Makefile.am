@@ -24,10 +24,10 @@
 #
 
 # check arguments
-if {[llength $argv] != 4} { error "expected argument: input idls lang terse" }
-lassign $argv input idls lang terse
-
-set topt [expr {$terse?" -t":""}]
+if {[llength $argv] != 4} {
+  error "expected argument: input idls terse skelopts"
+}
+lassign $argv input idls terse skelopts
 
 # generate copyright notice (if any)
 if {![catch {dotgen input notice} text]} {
@@ -63,8 +63,8 @@ distclean-local:
 merge: merge-interactive
 merge-%:
 	cd ${top_srcdir} && ${GENOM3} <"[dotgen genom cmdline]"> \
-		skeleton<"$topt"> -l '<"$lang">' -m $* <"$input">
-<' if {!$terse} {'>
+	  skeleton <"[join $skelopts { }]"> -m $* <"$input">
+<'if {!$terse} {'>
 
 # documentation
 dist_doc_DATA=	README.html README.adoc

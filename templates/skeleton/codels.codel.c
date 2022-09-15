@@ -1,5 +1,5 @@
 <'
-# Copyright (c) 2010-2013,2020 LAAS/CNRS
+# Copyright (c) 2010-2013,2020,2022 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -22,8 +22,8 @@
 #                                           Anthony Mallet on Sun Jan 24 2010
 
 # check arguments
-if {[llength $argv] != 2} { error "expected arguments: component task" }
-lassign $argv component task
+if {[llength $argv] != 3} { error "expected arguments: component task extern" }
+lassign $argv component task extern
 
 lang c
 
@@ -43,6 +43,7 @@ if {$task ne ""} {'>
 
 /* <"[--- Task [$task name] ----------------------------------------------]"> */
 <'  foreach codel [$task codels] {'>
+<'    if {[$codel loc context] ni $extern} continue'>
 
 
 /** Codel <"[$codel name]"> of task <"[$task name]">.
@@ -70,19 +71,22 @@ if {$task ne ""} {'>
   /* skeleton sample: insert your code */
   /* skeleton sample */ return <"[[lindex [$codel yields] 0] cname]">;
 }
-<' } '>
-<'}
+<'  }'>
+<'}'>
+<'
 
+# --- Validation codels ----------------------------------------------------
 
-# --- Validation codels --------------------------------------------------
-
-if {$task eq ""} {
-  foreach service [$component services] {
-    if {[llength [$service validate]] == 0} continue'>
+'>
+<'if {$task eq ""} {'>
+<'  foreach service [$component services] {'>
+<'    if {[$service loc context] ni $extern} continue'>
+<'    if {[llength [$service validate]] == 0} continue'>
 
 
 /* <"[--- [string toupper [$service kind] 0] [$service name] ------------]"> */
 <'    foreach codel [$service validate] {'>
+<'      if {[$codel loc context] ni $extern} continue'>
 
 /** Validation codel <"[$codel name]"> of <"[$service kind]"> <"[$service name]">.
  *
@@ -102,21 +106,23 @@ if {$task eq ""} {
   /* skeleton sample: insert your code */
   /* skeleton sample */ return genom_ok;
 }
-<'       } '>
 <'    } '>
-<'}
+<'  } '>
+<'}'>
+<'
 
-# --- Services codels ----------------------------------------------------
+# --- Services codels ------------------------------------------------------
 
-foreach service [$component services] {
-  if {[catch {$service task} t]} { set t "" }
-  if {$t != $task || [llength [$service codels simple fsm]] == 0} {
-    continue
-  } '>
+'>
+<'foreach service [$component services] {'>
+<'  if {[$service loc context] ni $extern} continue'>
+<'  if {[catch {$service task} t]} { set t "" } '>
+<'  if {$t != $task || ![llength [$service codels simple fsm]]} continue '>
 
 
 /* <"[--- [string toupper [$service kind] 0] [$service name] ------------]"> */
 <' foreach codel [$service codels simple fsm] {'>
+<'   if {[$codel loc context] ni $extern} continue'>
 
 /** Codel <"[$codel name]"> of <"[$service kind]"> <"[$service name]">.
  *

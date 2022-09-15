@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2015,2017 LAAS/CNRS
+# Copyright (c) 2010-2015,2017,2022 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -29,9 +29,18 @@
 # Default template for user skeleton file generation.
 
 template usage "Skeleton generation template\n" [regsub -all [join {
-  { *#/? ?} {----} {[*+]([^*+\n]+)[*+]} {::} { ::\n}
+  { *#/? ?} {----} {::} {[*]([^*\n]+)[*]} {[+]([^\n]+?)[+]}
 } |] {
-  #/ The skeleton template generates the skeleton of the codel functions
+  #/ === Synopsys
+  #
+  # *genom3* *skeleton* [*-l c++*] [*-C* 'dir']
+  #     [-x] [--extern='component'[,...]]
+  #	[*-m* 'tool'] [*-t*] [*-f*]
+  #	'file.gen' [...]
+  #
+  # === Description
+  #
+  # The skeleton template generates the skeleton of the codel functions
   # defined in the input .gen file. It also generates a sample build
   # infrastructure for building them. By default, files are generated in the
   # same directory as the input .gen file. The `-C` option can be used to
@@ -72,28 +81,35 @@ template usage "Skeleton generation template\n" [regsub -all [join {
   # +-l c+++::
   # +--language=c+++ ::
   #		Compile C codels with a C++ compiler
+  #
   # +-C+::
   # +--directory='dir'+ ::
-  #	Output files in dir instead of source directory
+  #		Output files in dir instead of source directory
+  #
+  # +-x+::
+  #		Generate skeleton for all codels, including externally defined
+  #		ones.
+  # +--extern=['component'[,...]]+ ::
+  #		Generate skeleton for codels defined in those components.
+  #
   # +-m+::
   # +--merge='tool'+ ::
   #		Merge conflicting files with tool
   # +-i+ ::
-  #			Interactively merge conflicting files, alias for
-  #			`-m interactive`
+  #		Interactively merge conflicting files, alias for
+  #		`-m interactive`
   # +-u+ ::
-  #			Automatically merge conflicting files, alias for
-  #			`-m auto`
+  #		Automatically merge conflicting files, alias for `-m auto`
   # +-f+::
   # +--force+ ::
-  #			Overwrite existing files (use with caution)
+  #		Overwrite existing files (use with caution)
   # +-t+::
   # +--terse+ ::
-  #			Produce terse output: no documentation is generated
+  #		Produce terse output: no documentation is generated
   # +-h+::
   # +--help+ ::
-  #			Print usage summary (this text)
-} {\1}]
+  #		Print usage summary (this text)
+} {\1\2}]
 
 # defaults: no file overwrite
 engine mode -overwrite -merge-if-change
@@ -103,6 +119,8 @@ set terse no
 template options {
   -l - --language	{ set lang [template arg] }
   -C - --directory	{ set outdir [template arg] }
+  -x			{ set extrefs [list] }
+  --extern		{ set extrefs [split [template arg] {, }] }
   -m - --merge		{
     engine merge-tool [template arg]; engine mode +merge-if-change
   }
@@ -132,6 +150,18 @@ foreach f [dotgen input deps] {
   set f [file normalize $f]
   if {[string match $base/* $f]} {
     lappend idls [string range $f [string length $base/] end]
+  }
+}
+
+# list of extern references
+if {[info exists extrefs]} {
+  switch [llength $extrefs] {
+    0 { set externs [list {*}[dotgen components] {*}[dotgen interfaces]] }
+    default {
+      set externs [lmap e $extrefs {
+        list {*}[dotgen component $e] {*}[dotgen interface $e]
+      }]
+    }
   }
 }
 
@@ -166,17 +196,19 @@ set src [lang $iface; fileext]
 set ext [lang $lang; fileext]
 
 foreach c [dotgen components] {
+  set e [expr {[info exists externs] ? $externs : $c}]
+
   # one source file for each task
   foreach t [$c tasks] {
-    template parse					\
-        args [list $c $t] file codels.codel$src		\
-        file codels/[$c name]_[$t name]_codels$ext
+    if {[$t loc context] ni $e} continue
+
+    template parse args [list $c $t $e]		\
+        file codels.codel$src file codels/[$c name]_[$t name]_codels$ext
   }
 
-    # and one file for codels with no associated task
-    template parse					\
-	args [list $c ""] file codels.codel$src		\
-	file codels/[$c name]_codels$ext
+  # and one file for codels with no associated task
+  template parse args [list $c "" $e]		\
+      file codels.codel$src file codels/[$c name]_codels$ext
 
     # mandatory pkg-config file
     template parse					\
@@ -197,6 +229,15 @@ if {!$terse} {
 
 # generate user build files fragment
 #
+set skelopts [list "-l '$lang'"]
+if {$terse} { lappend skelopts "-t" }
+if {[info exists extrefs]} {
+  switch -- [llength $extrefs] {
+    0 { lappend skelopts -x }
+    default { lappend skelopts "--extern='[join $extrefs ,]'" }
+  }
+}
+
 template parse perm a+x					\
     string "#!/bin/sh\nautoreconf -vi\n"		\
     file bootstrap.sh
@@ -206,7 +247,7 @@ template parse						\
     args [list $input $lang $terse]			\
     file top.configure.ac file configure.ac
 template parse						\
-    args [list $input $idls $lang $terse]		\
+    args [list $input $idls $terse $skelopts]		\
     file top.Makefile.am file Makefile.am
 template parse						\
     args [list $input $lang] file codels.Makefile.am	\
