@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010,2012,2014,2017 LAAS/CNRS
+# Copyright (c) 2010,2012,2014,2017,2022 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -27,9 +27,15 @@
 # --------------------
 
 template usage "Interactive TCL template\n" [regsub -all [join {
-  { *#/? ?} {----} {[*+]([^*+\n]+)[*+]} {::} { ::\n}
+  { *#/? ?} {----} {[*+]([^*+\n]+)[*+]} {::}
 } |] {
-  #/ This template exports all the objects from the input .gen file for
+  #/ === Synopsys
+  #
+  # *genom3* *interactive* [*-b*] ['file.gen' [...]]
+  #
+  # === Description
+  #
+  # This template exports all the objects from the input .gen file for
   # interactive use in a `tclsh` interpreter. The `genom` TCL engine
   # procedures are available as in regular (scripted) templates.
   #
@@ -64,7 +70,10 @@ template options {
 }
 
 # process input files
-dotgen parse file {*}$argv
+if [llength $argv] {
+  dotgen parse file {*}$argv
+}
+
 
 # provide a default 'interactive' function in case eltclsh cannot be loaded
 proc interactive {} {

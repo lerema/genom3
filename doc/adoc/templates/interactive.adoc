@@ -34,6 +34,12 @@ Interactive template
 
 
 
+=== Synopsys
+
+*genom3* *interactive* [*-b*] ['file.gen' [...]]
+
+=== Description
+
 This template exports all the objects from the input .gen file for
 interactive use in a `tclsh` interpreter. The `genom` TCL engine
 procedures are available as in regular (scripted) templates.
@@ -57,6 +63,9 @@ Batch mode: disable line editing facility
 +-h+::
 +--help+ ::
 Print usage summary (this text)
+
+
+
 
 
 
