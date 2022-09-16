@@ -502,8 +502,19 @@ comp_merge(comp_s c, comp_s m, propkind k)
   for(hash_first(m->tasks, &i); i.current; hash_next(&i))
     if (!task_clone(i.value) && !e) e = errno;
 
+  /* clone ports */
   for(hash_first(m->ports, &i); i.current; hash_next(&i)) {
-    if (!port_clone(i.value, k == PROP_USES /*flipdir*/) && !e) e = errno;
+    switch(k) {
+      case PROP_EXTENDS: case PROP_PROVIDES:
+        if (!port_clone(i.value) && !e) e = errno;
+        break;
+
+      case PROP_USES:
+        if (!port_use(i.value) && !e) e = errno;
+        break;
+
+      default: assert(0);
+    }
   }
 
   for(hash_first(m->services, &i); i.current; hash_next(&i)) {

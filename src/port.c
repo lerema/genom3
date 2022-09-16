@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2012,2014,2017 LAAS/CNRS
+ * Copyright (c) 2011-2012,2014,2017,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -59,9 +59,9 @@ hash_s		port_props(port_s p) { assert(p); return p->props; }
 
 /** create a port in a component
  */
-port_s
-port_create(tloc l, portdir d, portkind k, const char *name, idltype_s t,
-            hash_s props)
+static port_s
+port_new(tloc l, portdir d, portkind k, const char *name, idltype_s dtype,
+         hash_s props)
 {
   comp_s c = comp_active();
   service_s service;
@@ -69,7 +69,7 @@ port_create(tloc l, portdir d, portkind k, const char *name, idltype_s t,
   port_s p;
   hiter i;
   int e;
-  assert(c && name);
+  assert(c && name && dtype);
 
   /* check for already used names */
   service = comp_service(c, name);
@@ -87,13 +87,13 @@ port_create(tloc l, portdir d, portkind k, const char *name, idltype_s t,
   }
 
   /* refuse anonymous and native types */
-  if (t && !type_name(t)) {
+  if (!type_name(dtype)) {
     parserror(l, "anonymous type is not allowed for port %s", name);
     return NULL;
   }
-  if (t && type_native(t, 0/*verbose*/)) {
+  if (type_native(dtype, 0/*silent*/)) {
     parserror(l, "port %s may not contain native types", name);
-    type_native(t, 1/*verbose message*/);
+    type_native(dtype, 1/*verbose*/);
     return NULL;
   }
 
@@ -119,7 +119,7 @@ port_create(tloc l, portdir d, portkind k, const char *name, idltype_s t,
       case PROP_TASK: case PROP_VALIDATE: case PROP_INTERRUPTS:
       case PROP_BEFORE: case PROP_AFTER: case PROP_EXTENDS: case PROP_PROVIDES:
       case PROP_USES:
-        parserror(prop_loc(i.value), "property %s is not suitable for tasks",
+        parserror(prop_loc(i.value), "property %s is not suitable for ports",
                   prop_strkind(prop_kind(i.value)));
         e = 1; break;
     }
@@ -137,13 +137,9 @@ port_create(tloc l, portdir d, portkind k, const char *name, idltype_s t,
   p->kind = k;
   p->name = string(name);
   p->component = c;
-  p->datatype = t;
-  p->type = type_newport(l, name, p);
+  p->datatype = dtype;
+  p->type = NULL;
   p->props = props;
-  if (!p->type) {
-    free(p);
-    return NULL;
-  }
 
   e = hash_insert(comp_ports(c), p->name, p, (hrelease_f)port_destroy);
   switch(e) {
@@ -163,30 +159,93 @@ port_create(tloc l, portdir d, portkind k, const char *name, idltype_s t,
   return p;
 }
 
+port_s
+port_create(tloc l, portdir d, portkind k, const char *name,
+            idltype_s dtype, hash_s props)
+{
+  idltype_s ptype;
+  port_s p = port_new(l, d, k, name, dtype, props);
+  if (!p) return NULL;
+
+  /* create port type */
+  ptype = type_newport(l, name, p);
+  if (!ptype) {
+    port_destroy(p);
+    return NULL;
+  }
+
+  p->type = ptype;
+  return p;
+}
+
 
 /* --- port_clone ---------------------------------------------------------- */
 
 /** clone a port
  */
 port_s
-port_clone(port_s port, int flipdir)
+port_clone(port_s port)
+{
+  hash_s prop;
+  port_s p;
+
+  /* clone properties */
+  prop = hash_create("property list", 0);
+  if (!prop || prop_merge_list(prop, port_props(port), 0/*ignore_dup*/))
+    return NULL;
+
+  /* create local port with the same properties and same type */
+  p = port_new(
+    port->loc, port->dir, port->kind, port->name, port->datatype, prop);
+  if (!p) {
+    hash_destroy(prop, 1);
+    return NULL;
+  }
+  p->type = port->type;
+
+  /* For backward compatibility with genom<2.99.41, create an alias to the
+   * port type in the current component. This will normally not be used
+   * anymore, but it still has the advantage of reserving the name and
+   * probably avoids confusions by preventing from creating an unrelated
+   * type. */
+  if (!type_newalias(port->loc, port->name, port->type)) {
+    port_destroy(p);
+    return NULL;
+  }
+
+  return p;
+}
+
+
+/* --- port_use ------------------------------------------------------------ */
+
+/** create a new sibling port with direction flipped.
+ */
+port_s
+port_use(port_s port)
 {
   hash_s prop;
   portdir d;
+  port_s p;
 
   switch (port->dir) {
-    case PORT_IN:	d = flipdir?PORT_OUT:PORT_IN; break;
-    case PORT_OUT:	d = flipdir?PORT_IN:PORT_OUT; break;
+    case PORT_IN:	d = PORT_OUT; break;
+    case PORT_OUT:	d = PORT_IN; break;
   }
 
   /* clone properties */
   prop = hash_create("property list", 0);
-  if (!prop ||
-      prop_merge_list(prop, port_props(port), 0/*ignore_dup*/))
+  if (!prop || prop_merge_list(prop, port_props(port), 0/*ignore_dup*/))
     return NULL;
 
-  return port_create(
-    port->loc, d, port->kind, port->name, port->datatype, prop);
+  /* create local port with the same properties */
+  p = port_create(port->loc, d, port->kind, port->name, port->datatype, prop);
+  if (!p) {
+    hash_destroy(prop, 1);
+    return NULL;
+  }
+
+  return p;
 }
 
 

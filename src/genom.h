@@ -499,8 +499,9 @@ typedef enum portkind {
 } portkind;
 
 port_s		port_create(tloc l, portdir d, portkind k, const char *name,
-                        idltype_s t, hash_s props);
-port_s		port_clone(port_s port, int flipdir);
+                        idltype_s dtype, hash_s props);
+port_s		port_clone(port_s port);
+port_s		port_use(port_s port);
 void		port_destroy(port_s p);
 
 tloc		port_loc(port_s p);
