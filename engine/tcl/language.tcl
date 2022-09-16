@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2015,2017-2018,2020 LAAS/CNRS
+# Copyright (c) 2010-2015,2017-2018,2020,2022 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -270,7 +270,8 @@ namespace eval language {
   #
   proc mangle { type } {
     switch -- [$type kind] {
-      enum - enumerator - struct - union - exception - typedef - native {
+      enum - enumerator - struct - union - exception - port -
+      typedef - native {
 	return [string map {:: _} t[$type fullname]]
       }
 

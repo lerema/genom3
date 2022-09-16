@@ -311,6 +311,7 @@ A 'type' object.
 
 
 
+
 [[mapping]]
 === *language mapping* ['objects'] ['locations']
 
