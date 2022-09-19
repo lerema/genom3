@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2014,2017,2020 LAAS/CNRS
+# Copyright (c) 2010-2014,2017,2020,2022 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -110,8 +110,10 @@ lang $lang
 # get types and codels if needed
 set objs [dotgen types]
 if {$sign} {
-  foreach c [dotgen components] {
-    lappend objs {*}[$c codels]
+  foreach comp [list {*}[dotgen components] {*}[dotgen interfaces]] {
+    lappend objs {*}[lmap c [$comp codels] {
+      expr {[$c loc context] == $comp ? $c : [continue]}
+    }]
   }
 }
 
