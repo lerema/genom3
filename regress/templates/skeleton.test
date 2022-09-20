@@ -1,14 +1,14 @@
 #!/bin/sh
 . ${0%${0##*/}}../test.sh
 
-mkdir -p run.t
-
 
 # --- simple invocation ----------------------------------------------------
 #
-testing 'skeleton template invocation'
+testing 'skeleton template for component'
+rm -rf run.t
+mkdir -p run.t
 
-run 0 ${GENOM_BIN} skeleton -C run.t ${thisdir}../component.gen
+run 0 ${GENOM_BIN} skeleton -C run.t ${thisdir}../component.gen c
 run 0 ls -R -1 run.t
 expect out '
 	/^run.t:$/ {next}
@@ -25,6 +25,27 @@ expect out '
 	/^c-genom3.pc.in$/ {next}
 	/^c_t[12]_codels\.c$/ {next}
 	/^c_codels\.c$/ {next}
+	/^$/ {next}
+	{exit 2}
+'
+
+testing 'skeleton template for interface'
+rm -rf run.t
+mkdir -p run.t
+
+run 0 ${GENOM_BIN} skeleton -C run.t ${thisdir}../component.gen i
+run 0 ls -R -1 run.t
+expect out '
+	/^run.t:$/ {next}
+	/^run.t\/codels:$/ {next}
+	/^bootstrap.sh$/ {next}
+	/^codels$/ {next}
+	/^configure.ac$/ {next}
+	/^Makefile.am$/ {next}
+	/^README.adoc$/ {next}
+	/^i-genom3-uninstalled.pc.in$/ {next}
+	/^i-genom3.pc.in$/ {next}
+	/^i_codels\.c$/ {next}
 	/^$/ {next}
 	{exit 2}
 '

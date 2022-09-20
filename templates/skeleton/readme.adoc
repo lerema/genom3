@@ -24,8 +24,8 @@
 #
 
 # check arguments
-if {[llength $argv] != 1} { error "expected argument: input" }
-lassign $argv input
+if {[llength $argv] != 2} { error "expected argument: components input" }
+lassign $argv components input
 
 # generate copyright notice (if any)
 if {![catch {dotgen input notice} text]} {
@@ -33,11 +33,11 @@ if {![catch {dotgen input notice} text]} {
 }
 
 # build header info
-unset -nocomplain title author rev
-foreach comp [dotgen components] {
-  lappend title [$comp name]
+lassign {} title author rev
+foreach comp $components {
+  lappend title "[$comp name] [$comp class]"
   catch { lappend author [$comp email] }
-  lappend rev [$comp version]
+  catch { lappend rev [$comp version] }
 }
 
 '>
@@ -47,7 +47,7 @@ foreach comp [dotgen components] {
 // rather be added to the "doc" attributes of the genom objects defined in
 // <"$input">.
 
-= <"[join $title {, } ]"> component
+= <"[join $title {, } ]">
 <'if {[info exists author]} {'>
 <"[join $author {, } ]">
 <'}'>
@@ -63,7 +63,7 @@ ifdef::backend-html5[]
 ++++
 endif::[]
 
-<'foreach comp [dotgen components] {'>
+<'foreach comp $components {'>
 <'  if {![catch {$comp doc} doc]} {'>
 
 <"$doc">
@@ -185,7 +185,7 @@ proc expand-initer { initer } {
 
 == Ports
 
-<'foreach comp [dotgen components] {'>
+<'foreach comp $components {'>
 <'  foreach port [$comp ports] {'>
 <'     set multiple [expr {[$port kind] == "multiple"?"multiple ":""}] '>
 
@@ -209,7 +209,7 @@ a|.Data structure
 <'}'>
 
 == Services
-<'foreach comp [dotgen components] {'>
+<'foreach comp $components {'>
 <'  foreach service [$comp services] {'>
 
 [[<"[$service name]">]]
@@ -280,7 +280,7 @@ a|.Context
 <'}'>
 
 == Tasks
-<'foreach comp [dotgen components] {'>
+<'foreach comp $components {'>
 <'  foreach task [$comp tasks] {'>
 
 [[<"[$task name]">]]

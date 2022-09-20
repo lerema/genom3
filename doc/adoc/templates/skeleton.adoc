@@ -41,7 +41,7 @@ Skeleton template
 *genom3* *skeleton* [*-l c++*] [*-C* 'dir']
     [-x] [--extern='component'[,...]]
 [*-m* 'tool'] [*-t*] [*-f*]
-'file.gen' [...]
+'file.gen' [...] ['object'] [...]
 
 === Description
 
@@ -114,6 +114,48 @@ creating ./codels/Makefile.am
 +-h+::
 +--help+ ::
 	Print usage summary (this text)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

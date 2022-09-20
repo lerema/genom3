@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2015,2017,2022 LAAS/CNRS
+# Copyright (c) 2010-2015,2017,2022-2023 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -36,7 +36,7 @@ template usage "Skeleton generation template\n" [regsub -all [join {
   # *genom3* *skeleton* [*-l c++*] [*-C* 'dir']
   #     [-x] [--extern='component'[,...]]
   #	[*-m* 'tool'] [*-t*] [*-f*]
-  #	'file.gen' [...]
+  #	'file.gen' [...] ['object'] [...]
   #
   # === Description
   #
@@ -135,12 +135,22 @@ template options {
   -h - --help		{ puts [template usage]; exit 0 }
 }
 
-# check/process input files
-if {![llength $argv]} { puts [template usage]; exit 2 }
-dotgen parse file {*}$argv
-set input [file tail [lindex $argv 0]]
+# get object list and input file list
+lassign {} cnames inputs
+foreach a $argv {
+  lappend [expr {[file readable $a] ? "inputs" : "cnames"}] $a
+}
+if {![llength $inputs]} {
+  # no readable file given: use first name as a file so that ENOENT is reported
+  set cnames [lassign $cnames inputs]
+}
+
+# process input files
+if {![llength $inputs]} { puts [template usage]; exit 2 }
+dotgen parse file {*}$inputs
+set input [file tail [lindex $inputs 0]]
 if {![info exists outdir]} {
-  set outdir [file dirname [lindex $argv 0]]
+  set outdir [file dirname [lindex $inputs 0]]
 }
 
 # list of local idl source files
@@ -154,21 +164,51 @@ foreach f [dotgen input deps] {
 }
 
 # list of extern references
+set externs [list]
 if {[info exists extrefs]} {
   switch [llength $extrefs] {
     0 { set externs [list {*}[dotgen components] {*}[dotgen interfaces]] }
     default {
       set externs [lmap e $extrefs {
-        list {*}[dotgen component $e] {*}[dotgen interface $e]
+        set o [list {*}[dotgen component $e] {*}[dotgen interface $e]]
+        if {![llength $o]} { error "no such object $e." }
+        set o
       }]
     }
   }
 }
 
-# check options consistency
-if {[catch {[dotgen component] lang} iface]} {
-    set iface c
+# get components to generate stubs for, default to components and interfaces
+# defined in input files
+set components [lmap n $cnames {
+  set o [list {*}[dotgen component $n] {*}[dotgen interface $n]]
+  if {![llength $o]} { error "no such object $n." }
+  set o
+}]
+
+if {![llength $components]} {
+  set stinputs [lmap f $inputs {
+    file stat $f st
+    expr {"$st(dev)+$st(ino)"}
+  }]
+  set components [lmap c [list {*}[dotgen components] {*}[dotgen interfaces]] {
+    file stat [$c loc file] st
+    if {"$st(dev)+$st(ino)" ni $stinputs} continue
+    set c
+  }]
 }
+
+if {![llength $components]} { error "no component or interface." }
+
+# check options consistency
+set iface [list]
+foreach o $components {
+  if {[$o lang] ni $iface} { lappend iface [$o lang] }
+}
+if {[llength $iface] != 1} {
+  error "inconsistent component languages: [join $iface {, }]."
+}
+
 if {![info exists lang]} {
   set lang $iface
 }
@@ -195,8 +235,8 @@ engine chdir $outdir
 set src [lang $iface; fileext]
 set ext [lang $lang; fileext]
 
-foreach c [dotgen components] {
-  set e [expr {[info exists externs] ? $externs : $c}]
+foreach c $components {
+  set e [expr {[llength $externs] ? $externs : $c}]
 
   # one source file for each task
   foreach t [$c tasks] {
@@ -222,7 +262,7 @@ foreach c [dotgen components] {
 
 # asciidoc template
 if {!$terse} {
-  template parse args [list $input]			\
+  template parse args [list $components $input]		\
       file readme.adoc file README.adoc
 }
 
@@ -241,14 +281,16 @@ if {[info exists extrefs]} {
 template parse perm a+x					\
     string "#!/bin/sh\nautoreconf -vi\n"		\
     file bootstrap.sh
+if {"component" in [lmap c $components {$c class}]} {
+  template parse					\
+      file ag_templates.m4 file autoconf/ag_templates.m4
+}
 template parse						\
-    file ag_templates.m4 file autoconf/ag_templates.m4
-template parse						\
-    args [list $input $lang $terse]			\
+    args [list $components $argv $lang $terse]		\
     file top.configure.ac file configure.ac
 template parse						\
-    args [list $input $idls $terse $skelopts]		\
+    args [list $components $input $idls $terse $skelopts]	\
     file top.Makefile.am file Makefile.am
 template parse						\
-    args [list $input $lang] file codels.Makefile.am	\
-    file codels/Makefile.am
+    args [list $components $externs $input $lang]		\
+    file codels.Makefile.am file codels/Makefile.am

@@ -1,6 +1,6 @@
 <'
 #
-# Copyright (c) 2010-2014,2019-2020 LAAS/CNRS
+# Copyright (c) 2010-2014,2019-2020,2022 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -24,8 +24,10 @@
 #
 
 # check arguments
-if {[llength $argv] != 2} { error "expected argument: input lang" }
-lassign $argv input lang
+if {[llength $argv] != 4} {
+  error "expected argument: components externs input lang"
+}
+lassign $argv components externs input lang
 lang $lang
 
 # generate copyright notice (if any)
@@ -33,16 +35,21 @@ if {![catch {dotgen input notice} text]} {
   puts #[join [split $text "\n"] "\n#"]
 }
 '>
+lib_LTLIBRARIES =
+
 <'set hlist [dict create]'>
-<'foreach c [dotgen components] {'>
+<'foreach c $components {'>
+<'  set e [expr {[llength $externs] ? $externs : $c}]'>
 <'  set if [$c lang]'>
 <'  set h [$c name]_${if}_types[fileext header]'>
 <'  dict set hlist $h $if'>
-lib_LTLIBRARIES = lib<"[$c name]">_codels.la
+# <"[$c name]"> codels library
+lib_LTLIBRARIES += lib<"[$c name]">_codels.la
 
 lib<"[$c name]">_codels_la_SOURCES  =	<"$h">
 lib<"[$c name]">_codels_la_SOURCES +=	<"[$c name]_codels[fileext]">
 <'  foreach t [$c tasks] {'>
+<'    if {[$t loc context] ni $e} continue'>
 lib<"[$c name]">_codels_la_SOURCES +=	<"[$c name]_[$t name]_codels[fileext]">
 <'  }'>
 
@@ -54,7 +61,7 @@ lib<"[$c name]">_codels_la_LDFLAGS  =	-release $(PACKAGE_VERSION)
 
 <'}'>
 
-# idl  mappings
+# idl mappings
 BUILT_SOURCES=	<"[dict keys $hlist]">
 CLEANFILES=	${BUILT_SOURCES}
 <'dict for {h l} $hlist {'>

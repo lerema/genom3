@@ -1,6 +1,6 @@
 <'
 #
-# Copyright (c) 2010-2014,2017-2020 LAAS/CNRS
+# Copyright (c) 2010-2014,2017-2020,2023 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -24,10 +24,12 @@
 #
 
 # check arguments
-if {[llength $argv] != 3} { error "expected argument: input lang terse" }
-lassign $argv input lang terse
+if {[llength $argv] != 4} {
+  error "expected argument: components input lang terse"
+}
+lassign $argv components input lang terse
 
-set c [lindex [dotgen component] 0]
+set c [lindex $components 0]
 if {[catch {$c version} version]} { set version 0 }
 if {[catch {$c email} email]} { set email {} }
 '>
@@ -51,7 +53,7 @@ LT_INIT([disable-static])
 
 <' # compute package languages
 set lang $lang
-foreach c [dotgen components] { lappend lang [$c language] }
+foreach c $components { lappend lang [$c language] }
 
 foreach l [lsort -unique $lang] {
   switch -exact -- $l {
@@ -75,7 +77,7 @@ AC_SUBST([MAKE], [$ac_cv_path_MAKE])
 dnl External packages
 <'set requires [list]'>
 <'set codels_requires [list]'>
-<'foreach c [dotgen components] {'>
+<'foreach c $components {'>
 <'  lappend requires {*}[$c require]'>
 <'  lappend codels_requires {*}[$c codels-require]'>
 <'}'>
@@ -99,9 +101,11 @@ if test "$GENOM3" = "no"; then
   AC_MSG_ERROR([genom3 tool not found], 2)
 fi
 
+<'if {"component" in [lmap c $components {$c class}]} {'>
 dnl --with-templates option
 AG_OPT_TEMPLATES([$GENOM3 <"[dotgen genom cmdline]">],
-    [$srcdir/<"$input">])
+    [<"$input">])
+<'}'>
 
 <'if {!$terse} {'>
 dnl Doc
@@ -110,7 +114,7 @@ AM_MISSING_PROG([ASCIIDOCTOR], [asciidoctor])
 
 dnl Output
 AC_CONFIG_FILES([
-<'foreach c [dotgen components] {'>
+<'foreach c $components {'>
 	<"[$c name]">-genom3.pc
 	<"[$c name]">-genom3-uninstalled.pc
 <'}'>
@@ -118,4 +122,6 @@ AC_CONFIG_FILES([
 	codels/Makefile
 ])
 AC_OUTPUT
+<'if {"component" in [lmap $c $components {$c class}]} {'>
 AG_OUTPUT_TEMPLATES
+<'}'>
