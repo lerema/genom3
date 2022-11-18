@@ -422,9 +422,22 @@ prop_merge(hash_s p, prop_s i, int ignore_dup)
       }
 
       case PROP_IDS: /* handled above */
+      case PROP_TASK:
         e = 0; break;
 
-      default:
+      case PROP_VERSION: case PROP_EMAIL: /* (merge ?) */
+        e = 0; break;
+
+      case PROP_LANG:
+        if (strcmp(prop_text(q), prop_text(i))) goto dup;
+        e = 0; break;
+
+      case PROP_CLOCKRATE: case PROP_PERIOD:
+      case PROP_DELAY: case PROP_PRIORITY: case PROP_SCHEDULING:
+      case PROP_STACK: case PROP_VALIDATE:
+      case PROP_SIMPLE_CODEL: case PROP_FSM_CODEL: case PROP_BEFORE:
+      case PROP_AFTER:
+      dup:
         if (ignore_dup) { e = 0; break; }
         parserror(prop_loc(i), "duplicate %s declaration", prop_name(i));
         parsenoerror(prop_loc(q), " %s declared here", prop_name(q));
