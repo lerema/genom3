@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2015,2017 LAAS/CNRS
+ * Copyright (c) 2009-2015,2017,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -51,25 +51,27 @@ int
 const_unaryop(cval *value, char op)
 {
   assert(value);
-  switch(value->k) {
-    case CST_VOID: case CST_CHAR: case CST_STRING: case CST_ENUM: return EDOM;
-    default: break;
+  switch(value->k) { nodefault;
+    case CST_VOID: case CST_CHAR: case CST_STRING: case CST_ENUM:
+      return EDOM;
+    case CST_BOOL: case CST_UINT: case CST_INT: case CST_FLOAT:
+      break;
   }
 
   switch(op) {
-    case '+': switch(value->k) {
+    case '+': switch((int)value->k) {
       case CST_BOOL:	return EDOM;
       default:	return 0;
     }
 
-    case '-': switch(value->k) {
+    case '-': switch((int)value->k) {
       case CST_UINT:	value->k = CST_INT; value->i = -value->u; return 0;
       case CST_INT:	value->i = -value->i; return 0;
       case CST_FLOAT:	value->f = -value->f; return 0;
       default:		return EDOM;
     }
 
-    case '~': switch(value->k) {
+    case '~': switch((int)value->k) {
       case CST_BOOL:	value->b = value->b?0:1; return 0;
       case CST_UINT:	value->u = ~value->u; return 0;
       case CST_INT:	value->i = ~value->i; return 0;
@@ -91,9 +93,11 @@ const_binaryop(cval *value, char op, cval arg)
 {
   int s;
   assert(value);
-  switch(value->k) {
-    case CST_VOID: case CST_CHAR: case CST_STRING: case CST_ENUM: return EDOM;
-    default: break;
+  switch(value->k) { nodefault;
+    case CST_VOID: case CST_CHAR: case CST_STRING: case CST_ENUM:
+      return EDOM;
+    case CST_BOOL: case CST_UINT: case CST_INT: case CST_FLOAT:
+      break;
   }
 
   /* convert arg and value to the largest type, except for << and >> which
@@ -116,65 +120,65 @@ const_binaryop(cval *value, char op, cval arg)
 
   /* compute result */
   switch(op) {
-    case '+': switch(value->k) {
+    case '+': switch((int)value->k) {
       case CST_UINT:	value->u += arg.u; return 0;
       case CST_INT:	value->i += arg.i; return 0;
       case CST_FLOAT:	value->f += arg.f; return 0;
       default:		return EDOM;
     }
 
-    case '-': switch(value->k) {
+    case '-': switch((int)value->k) {
       case CST_UINT:	value->u -= arg.u; return 0;
       case CST_INT:	value->i -= arg.i; return 0;
       case CST_FLOAT:	value->f -= arg.f; return 0;
       default:		return EDOM;
     }
 
-    case '*': switch(value->k) {
+    case '*': switch((int)value->k) {
       case CST_UINT:	value->u *= arg.u; return 0;
       case CST_INT:	value->i *= arg.i; return 0;
       case CST_FLOAT:	value->f *= arg.f; return 0;
       default:		return EDOM;
     }
 
-    case '/': switch(value->k) {
+    case '/': switch((int)value->k) {
       case CST_UINT:	value->u /= arg.u; return 0;
       case CST_INT:	value->i /= arg.i; return 0;
       case CST_FLOAT:	value->f /= arg.f; return 0;
       default:		return EDOM;
     }
 
-    case '%': switch(value->k) {
+    case '%': switch((int)value->k) {
       case CST_UINT:	value->u %= arg.u; return 0;
       case CST_INT:	value->i %= arg.i; return 0;
       default:		return EDOM;
     }
 
-    case '|': switch(value->k) {
+    case '|': switch((int)value->k) {
       case CST_UINT:	value->u |= arg.u; return 0;
       case CST_INT:	value->i |= arg.i; return 0;
       default:		return EDOM;
     }
 
-    case '&': switch(value->k) {
+    case '&': switch((int)value->k) {
       case CST_UINT:	value->u &= arg.u; return 0;
       case CST_INT:	value->i &= arg.i; return 0;
       default:		return EDOM;
     }
 
-    case '^': switch(value->k) {
+    case '^': switch((int)value->k) {
       case CST_UINT:	value->u ^= arg.u; return 0;
       case CST_INT:	value->i ^= arg.i; return 0;
       default:		return EDOM;
     }
 
-    case '<': switch(value->k) {
+    case '<': switch((int)value->k) {
       case CST_UINT:	value->u <<= arg.u; return 0;
       case CST_INT:	value->i <<= arg.u; return 0;
       default:		return EDOM;
     }
 
-    case '>': switch(value->k) {
+    case '>': switch((int)value->k) {
       case CST_UINT:	value->u >>= arg.u; return 0;
       case CST_INT:	value->i >>= arg.u; return 0;
       default:		return EDOM;
@@ -225,14 +229,14 @@ const_convert(cval *value, cvalkind k)
   assert(value);
   switch(value->k) {
     case CST_BOOL:
-      switch(k) {
+      switch((int)k) {
 	case CST_BOOL:	return 0;
 	default:	return EDOM;
       }
       break;
 
     case CST_UINT:
-      switch(k) {
+      switch((int)k) {
 	case CST_UINT:	return 0;
 	case CST_INT:	value->i = value->u; break;
 	case CST_FLOAT:	value->f = value->u; break;
@@ -241,7 +245,7 @@ const_convert(cval *value, cvalkind k)
       break;
 
     case CST_INT:
-      switch(k) {
+      switch((int)k) {
 	case CST_UINT:
 	  if (value->i < 0) return EDOM;
 	  value->u = value->i;
@@ -253,7 +257,7 @@ const_convert(cval *value, cvalkind k)
       break;
 
     case CST_FLOAT:
-      switch(k) {
+      switch((int)k) {
 	case CST_UINT:
 	  if ((uint64_t)value->f != value->f) return EDOM;
 	  value->u = value->f;
@@ -294,8 +298,8 @@ const_cast(tloc l, cval *value, idltype_s t)
   for(p = type_final(t);
       type_kind(p) == IDL_OPTIONAL; p = type_type(p))
     ;
-  switch(type_kind(p)) {
-    case IDL_BOOL:      s = const_convert(value, CST_BOOL);	break;
+  switch(type_kind(p)) { nodefault;
+    case IDL_BOOL:	s = const_convert(value, CST_BOOL);	break;
     case IDL_OCTET:
     case IDL_USHORT:
     case IDL_ULONG:
@@ -307,10 +311,11 @@ const_cast(tloc l, cval *value, idltype_s t)
     case IDL_DOUBLE:	s = const_convert(value, CST_FLOAT);	break;
     case IDL_CHAR:
     case IDL_STRING:	s = const_convert(value, CST_STRING);	break;
+
     case IDL_ENUM:
       if (value->k == CST_ENUM) {
-	assert(value->e && type_kind(value->e) == IDL_ENUMERATOR);
-	s = type_equal(type_type(value->e), p) ? 0 : EDOM;
+        assert(value->e && type_kind(value->e) == IDL_ENUMERATOR);
+        s = type_equal(type_type(value->e), p) ? 0 : EDOM;
       } else s = EDOM;
       break;
 
@@ -319,19 +324,18 @@ const_cast(tloc l, cval *value, idltype_s t)
     case IDL_FORWARD_STRUCT: case IDL_FORWARD_UNION: case IDL_EVENT:
     case IDL_PAUSE_EVENT: case IDL_PORT: case IDL_REMOTE: case IDL_NATIVE:
       parserror(l, "%s%s%s is not a valid constant type",
-		type_strkind(type_kind(t)),
-		type_name(t)?" ":"", type_name(t)?type_name(t):"");
+                type_strkind(type_kind(t)),
+                type_name(t)?" ":"", type_name(t)?type_name(t):"");
       parsenoerror(type_loc(t), "  %s%s%s declared here",
-		   type_strkind(type_kind(t)),
-		   type_name(t)?" ":"", type_name(t)?type_name(t):"");
+                   type_strkind(type_kind(t)),
+                   type_name(t)?" ":"", type_name(t)?type_name(t):"");
       return errno = EINVAL;
 
     case IDL_OPTIONAL:
       /* resolved above */
-      assert(0); break;
     case IDL_CASE: case IDL_MEMBER: case IDL_CONST: case IDL_TYPEDEF:
       /* not a valid return from type_final() */
-      assert(0); break;
+      assert(!"unreachable case"); abort();
   }
 
   if (s)
@@ -349,29 +353,29 @@ const_cast(tloc l, cval *value, idltype_s t)
 static cvalkind
 const_maxkind(cvalkind a, cvalkind b)
 {
-  switch(a) {
-    case CST_BOOL:		return a;
+  switch((int)a) {
+    case CST_BOOL:		return b;
     case CST_UINT:
-      switch(b) {
+      switch((int)b) {
 	case CST_BOOL:		return a;
 	default:		return b;
       }
     case CST_INT:
-      switch(b) {
+      switch((int)b) {
 	case CST_BOOL:
 	case CST_UINT:		return a;
 	default:		return b;
       }
 
     case CST_FLOAT:
-      switch(b) {
+      switch((int)b) {
 	case CST_BOOL:
 	case CST_UINT:
 	case CST_INT:		return a;
 	default:		return b;
       }
 
-    default:			return b;
+    default:			return a;
   }
 }
 

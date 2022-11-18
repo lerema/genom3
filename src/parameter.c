@@ -193,12 +193,21 @@ param_newlocal(tloc l, pdir dir, const char *name, clist_s member,
     parserror(l, "no such service parameter '%s'", i.value->s);
     return NULL;
   }
-  switch(type_kind(type)) {
+  switch(type_kind(type)) { nodefault;
+    case IDL_CASE: case IDL_MEMBER:
     case IDL_EVENT: case IDL_PAUSE_EVENT: case IDL_PORT: case IDL_REMOTE:
       parserror(l, "%s %s not allowed for parameter `%s'",
                 type_strkind(type_kind(type)), type_fullname(type), i.value->s);
       return NULL;
-    default: break;
+
+    case IDL_BOOL: case IDL_USHORT: case IDL_SHORT: case IDL_ULONG:
+    case IDL_LONG: case IDL_ULONGLONG: case IDL_LONGLONG: case IDL_FLOAT:
+    case IDL_DOUBLE: case IDL_CHAR: case IDL_OCTET: case IDL_STRING:
+    case IDL_ANY: case IDL_NATIVE: case IDL_EXCEPTION: case IDL_CONST:
+    case IDL_ENUM: case IDL_ENUMERATOR: case IDL_ARRAY: case IDL_SEQUENCE:
+    case IDL_OPTIONAL: case IDL_STRUCT: case IDL_UNION: case IDL_TYPEDEF:
+    case IDL_FORWARD_STRUCT: case IDL_FORWARD_UNION:
+      /* ok */ break;
   }
 
   /* create param */
@@ -627,9 +636,9 @@ param_setmember(param_s p, cval m)
   for(t = type_final(p->type);
       type_kind(t) == IDL_OPTIONAL; t = type_type(t))
     ;
-  switch(m.k) {
+  switch(m.k) { nodefault;
     case CST_UINT: /* array element */
-      switch(type_kind(t)) {
+      switch((int)type_kind(t)) {
 	case IDL_ARRAY: case IDL_SEQUENCE:
 	  d = type_length(t);
 	  t = type_type(t);
@@ -662,8 +671,9 @@ param_setmember(param_s p, cval m)
         t = type_type(t);
       break;
 
-    default:
-      assert(0);
+    case CST_VOID: case CST_BOOL: case CST_INT: case CST_FLOAT:
+    case CST_CHAR: case CST_ENUM:
+      assert(!"unreachable case"); abort();
   }
 
   p->type = t;

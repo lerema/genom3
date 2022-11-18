@@ -228,7 +228,7 @@ port_use(port_s port)
   portdir d;
   port_s p;
 
-  switch (port->dir) {
+  switch (port->dir) { nodefault;
     case PORT_IN:	d = PORT_OUT; break;
     case PORT_OUT:	d = PORT_IN; break;
   }

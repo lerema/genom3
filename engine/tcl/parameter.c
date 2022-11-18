@@ -65,7 +65,7 @@ param_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
     [paramidx_loc] = "loc", [paramidx_class] = "class", NULL
   };
   param_s p = v;
-  Tcl_Obj *r;
+  Tcl_Obj *r = NULL;
   int s;
 
   int i = paramidx_name; /* return name by default */
@@ -204,7 +204,7 @@ param_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
      * This returns the port object of `port` parameters.
      */
     case paramidx_port:
-      switch(param_src(p)) {
+      switch((int)param_src(p)) {
 	case P_PORT:
 	  r = Tcl_NewStringObj(port_genref(param_port(p)), -1);
 	  break;

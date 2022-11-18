@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2013,2015-2017 LAAS/CNRS
+ * Copyright (c) 2009-2013,2015-2017,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -293,7 +293,7 @@ codel_codel_mutex(codel_s codel)
     /* simple codels if the given codel is an fsm codel */
     if (*codel_task(codel)) {
       for(hash_first(service_props(s), &e); e.current; hash_next(&e)) {
-        switch(prop_kind(e.value)) {
+        switch((int)prop_kind(e.value)) {
           case PROP_SIMPLE_CODEL:
           case PROP_VALIDATE:
             other = prop_codel(e.value);
@@ -403,7 +403,7 @@ codel_fsmcreate(tloc l, comp_s comp, hash_s props)
 
   start_reqd = 0;
   for(hash_first(props, &i); i.current; hash_next(&i))
-    switch(prop_kind(i.value)) {
+    switch((int)prop_kind(i.value)) {
       case PROP_FSM_CODEL:
         c = prop_codel(i.value);
 

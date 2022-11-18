@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2015,2017 LAAS/CNRS
+ * Copyright (c) 2009-2015,2017,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -236,7 +236,7 @@ primary_expr:
   {
     if (!$1) { $$.k = CST_UINT; $$.u = 0; break; }
 
-    switch(type_kind($1)) {
+    switch((int)type_kind($1)) {
       case IDL_CONST:		$$ = type_constvalue($1);	break;
       case IDL_ENUMERATOR:	$$.k = CST_ENUM; $$.e = $1;	break;
 

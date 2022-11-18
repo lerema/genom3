@@ -65,7 +65,7 @@ port_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
   };
   port_s p = v;
   prop_s prop;
-  Tcl_Obj *r;
+  Tcl_Obj *r = NULL;
   int s;
 
   int i = portidx_name; /* return name by default */

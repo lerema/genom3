@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 LAAS/CNRS
+ * Copyright (c) 2012-2017,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -340,7 +340,7 @@ service_create(tloc l, svckind kind, const char *name, hash_s params,
 
   /* set codels parent task and service */
   for(hash_first(props, &i); i.current; hash_next(&i))
-    switch (prop_kind(i.value)) {
+    switch ((int)prop_kind(i.value)) {
       case PROP_FSM_CODEL:
 	c = prop_codel(i.value);
 	*codel_task(c) = t;

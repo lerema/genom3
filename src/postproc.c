@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2013 LAAS/CNRS
+ * Copyright (c) 2010-2013,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -63,7 +63,7 @@ dotgen_consolidate()
   /* look for unresolved forward type declaration */
   if (types) {
     for(hash_first(types, &i); i.current; hash_next(&i)) {
-      switch(type_kind(i.value)) {
+      switch((int)type_kind(i.value)) {
 	case IDL_FORWARD_STRUCT:
 	case IDL_FORWARD_UNION:
           assert(type_fullname(i.value));

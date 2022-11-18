@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010,2012-2015 LAAS/CNRS
+ * Copyright (c) 2010,2012-2015,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -135,7 +135,7 @@ initer_matchtype(idltype_s t, initer_s i)
 
   /* constructed initializer */
   if (i->sub) {
-    switch(type_kind(t)) {
+    switch((int)type_kind(t)) {
       case IDL_ARRAY: case IDL_SEQUENCE:
 	errno = initer_matcharray(t, i->sub);
 	break;
@@ -146,21 +146,30 @@ initer_matchtype(idltype_s t, initer_s i)
 	parserror(i->loc, "compound initializer cannot initialize %s%s%s",
 		  type_strkind(type_kind(t)), type_name(t)?" ":"",
 		  type_name(t)?type_fullname(t):"");
-	return errno = EINVAL;
+	errno = EINVAL;
     }
     if (errno) return errno;
   }
 
   /* simple initializer */
   if (i->value.k != CST_VOID && !i->sub) {
-    switch(type_kind(t)) {
+    switch(type_kind(t)) { nodefault;
+      case IDL_ANY: case IDL_NATIVE: case IDL_EXCEPTION: case IDL_CONST:
+      case IDL_EVENT: case IDL_PAUSE_EVENT: case IDL_PORT: case IDL_REMOTE:
+      case IDL_ENUMERATOR: case IDL_MEMBER: case IDL_CASE: case IDL_TYPEDEF:
+      case IDL_FORWARD_STRUCT: case IDL_FORWARD_UNION: case IDL_OPTIONAL:
+
       case IDL_ARRAY: case IDL_SEQUENCE: case IDL_STRUCT: case IDL_UNION:
 	parserror(i->loc, "cannot initialize %s%s%s with a scalar",
 		  type_strkind(type_kind(t)), type_name(t)?" ":"",
 		  type_name(t)?type_fullname(t):"");
 	return errno = EINVAL;
 
-      default: break;
+      case IDL_BOOL: case IDL_USHORT: case IDL_SHORT: case IDL_ULONG:
+      case IDL_LONG: case IDL_ULONGLONG: case IDL_LONGLONG: case IDL_FLOAT:
+      case IDL_DOUBLE: case IDL_CHAR: case IDL_OCTET: case IDL_STRING:
+      case IDL_ENUM:
+        break;
     }
 
     if (const_cast(i->loc, &i->value, t)) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2015,2019,2023 LAAS/CNRS
+ * Copyright (c) 2010-2015,2019,2022-2023 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -423,7 +423,7 @@ engine_gentype(Tcl_Interp *interp, Tcl_Interp *slave, idltype_s t)
     xwarnx("exported %s %s", type_strkind(type_kind(t)), type_fullname(t));
 
   /* generate type references recursively */
-  switch(type_kind(t)) {
+  switch(type_kind(t)) { nodefault;
     case IDL_BOOL: case IDL_USHORT: case IDL_SHORT: case IDL_ULONG:
     case IDL_LONG: case IDL_ULONGLONG: case IDL_LONGLONG: case IDL_FLOAT:
     case IDL_DOUBLE: case IDL_CHAR: case IDL_OCTET: case IDL_ANY:
@@ -459,8 +459,8 @@ engine_gentype(Tcl_Interp *interp, Tcl_Interp *slave, idltype_s t)
       s = 0;
       h = type_members(t); assert(h);
       for(hash_first(h, &i); i.value; hash_next(&i)) {
-	s = engine_gentype(interp, slave, i.value);
-	if (s) break;
+        s = engine_gentype(interp, slave, i.value);
+        if (s) break;
       }
       break;
     }

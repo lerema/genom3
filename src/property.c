@@ -164,7 +164,7 @@ prop_newvalue(tloc l, propkind k, cval c)
     }
   }
 
-  switch(c.k) {
+  switch(c.k) { nodefault;
     case CST_VOID:
       parserror(l, "invalid %s value", const_strkind(c.k));
       return NULL;
@@ -356,21 +356,21 @@ prop_merge(hash_s p, prop_s i, int ignore_dup)
 {
   hiter j;
   prop_s q;
-  int e = 0;
+  int e;
 
   assert(p && i);
 
   /* some properties must be recreated for current component */
-  switch (prop_kind(i)) {
+  e = 0;
+  switch (prop_kind(i)) { nodefault;
     case PROP_IDS:
-      if (!comp_addids(type_loc(prop_type(i)),
-                       type_membersscope(prop_type(i))))
-        e |= errno;
+      e = comp_addids(
+        type_loc(prop_type(i)), type_membersscope(prop_type(i))) ? 0 : errno;
       break;
 
     case PROP_TASK:
       i = prop_newtask(prop_loc(i), task_name(prop_task(i)));
-      if (!i || !i->task) e = errno;
+      e = (!i || !i->task) ? errno : 0;
       break;
 
     case PROP_VALIDATE:
@@ -378,10 +378,16 @@ prop_merge(hash_s p, prop_s i, int ignore_dup)
     case PROP_FSM_CODEL:
       i = prop_newcodel(
         prop_loc(i), prop_kind(i), codel_clone(prop_codel(i)));
-      if (!i || !i->codel) e = errno;
+      e = (!i || !i->codel) ? errno : 0;
       break;
 
-    default: break;
+    case PROP_DOC: case PROP_VERSION: case PROP_LANG: case PROP_EMAIL:
+    case PROP_REQUIRE: case PROP_CODELS_REQUIRE: case PROP_EXTENDS:
+    case PROP_PROVIDES: case PROP_USES: case PROP_CLOCKRATE:
+    case PROP_PERIOD: case PROP_DELAY: case PROP_PRIORITY:
+    case PROP_SCHEDULING: case PROP_STACK: case PROP_THROWS:
+    case PROP_INTERRUPTS: case PROP_BEFORE: case PROP_AFTER:
+      /* nop */ e = 0; break;
   }
   if (e) return e;
 
@@ -391,6 +397,8 @@ prop_merge(hash_s p, prop_s i, int ignore_dup)
     q = hash_find(p, prop_name(i)); assert(q);
     /* some properties can be merged */
     switch(prop_kind(i)) {
+      default: assert(!"unhandled case"); abort();
+
       case PROP_DOC:
         q->text = strings(prop_text(q), "\n", prop_text(i), NULL);
         e = 0;

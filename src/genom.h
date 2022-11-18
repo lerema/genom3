@@ -24,10 +24,20 @@
 #ifndef H_GENOM
 #define H_GENOM
 
+#include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdint.h>
-#include <limits.h>
+#include <stdlib.h>
+
+/** helpers */
+#ifdef  __GNUC__
+# pragma GCC diagnostic error "-Wswitch-enum"
+#endif
+
+#define nodefault	default: assert(!"unreachable case"); abort()
+
 
 /** runtime options */
 extern struct runopt_s {

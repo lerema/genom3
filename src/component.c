@@ -213,12 +213,20 @@ comp_pop(void)
       if (codel_check(j.value)) e = 1;
   for(hash_first(c->services, &i); i.current; hash_next(&i)) {
     for(hash_first(service_props(i.value), &j); j.current; hash_next(&j)) {
-      switch(prop_kind(j.value)) {
+      switch(prop_kind(j.value)) { nodefault;
         case PROP_SIMPLE_CODEL:
         case PROP_VALIDATE:
           if (codel_check(prop_codel(j.value))) e |= 1;
           break;
-        default: break;
+
+        case PROP_DOC: case PROP_IDS: case PROP_VERSION: case PROP_LANG:
+        case PROP_EMAIL: case PROP_REQUIRE: case PROP_CODELS_REQUIRE:
+        case PROP_EXTENDS: case PROP_PROVIDES: case PROP_USES:
+        case PROP_CLOCKRATE: case PROP_PERIOD: case PROP_DELAY:
+        case PROP_PRIORITY: case PROP_SCHEDULING: case PROP_STACK:
+        case PROP_TASK: case PROP_FSM_CODEL: case PROP_THROWS:
+        case PROP_INTERRUPTS: case PROP_BEFORE: case PROP_AFTER:
+          break;
       }
     }
     if (service_fsm(i.value)) {
@@ -402,10 +410,9 @@ comp_addevent(tloc l, idlkind k, const char *name)
     return NULL;
   }
 
-  switch(k) {
+  switch((int)k) { nodefault;
     case IDL_EVENT:		scope = c->scope; break;
     case IDL_PAUSE_EVENT:	scope = c->pausescope; break;
-    default: assert(!"bad event type");
   }
 
   /* reuse if it exists */
@@ -504,7 +511,7 @@ comp_merge(comp_s c, comp_s m, propkind k)
 
   /* clone ports */
   for(hash_first(m->ports, &i); i.current; hash_next(&i)) {
-    switch(k) {
+    switch((int)k) { nodefault;
       case PROP_EXTENDS: case PROP_PROVIDES:
         if (!port_clone(i.value) && !e) e = errno;
         break;
@@ -512,13 +519,11 @@ comp_merge(comp_s c, comp_s m, propkind k)
       case PROP_USES:
         if (!port_use(i.value) && !e) e = errno;
         break;
-
-      default: assert(0);
     }
   }
 
   for(hash_first(m->services, &i); i.current; hash_next(&i)) {
-    switch(k) {
+    switch((int)k) { nodefault;
       case PROP_EXTENDS: case PROP_PROVIDES:
         if (!service_clone(i.value)) e = errno;
         break;
@@ -527,8 +532,6 @@ comp_merge(comp_s c, comp_s m, propkind k)
         if (!remote_create(service_loc(i.value), i.value))
           e = errno;
         break;
-
-      default: assert(0);
     }
   }
 
@@ -586,7 +589,7 @@ comp_dump(comp_s c, FILE *out)
   props = comp_props(c);
   if (props)
     for(hash_first(props, &i); i.current; hash_next(&i)) {
-      switch(prop_kind(i.value)) {
+      switch(prop_kind(i.value)) { nodefault;
 	case PROP_DOC:
         case PROP_VERSION:
 	case PROP_LANG:
@@ -630,7 +633,12 @@ comp_dump(comp_s c, FILE *out)
                   prop_strkind(prop_kind(i.value)), v.f);
 	  break;
 
-        default: break;
+        case PROP_IDS: case PROP_EXTENDS: case PROP_PROVIDES: case PROP_USES:
+        case PROP_PERIOD: case PROP_DELAY: case PROP_PRIORITY:
+        case PROP_SCHEDULING: case PROP_TASK: case PROP_VALIDATE:
+        case PROP_SIMPLE_CODEL: case PROP_FSM_CODEL: case PROP_INTERRUPTS:
+        case PROP_BEFORE: case PROP_AFTER:
+          /* TBD */ break;
       }
     }
 #undef poptbrace

@@ -433,16 +433,16 @@ dotgen_read(char *buffer, size_t max_size)
 	warnx("input failed");
 	r = YY_NULL;
       }
-      break;
+      return r;
 
     case DG_INPUT_BUFFER:
       strncpy(buffer, dg_input.src.buffer, max_size);
       for(r = 0; buffer[r] != '\0' && r < max_size; r++) /* empty body */;
       dg_input.src.buffer += r;
-      break;
+      return r;
   }
 
-  return r;
+  assert(0); abort();
 }
 
 

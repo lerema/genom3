@@ -238,7 +238,7 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
       hiter i;
 
       r = Tcl_NewListObj(0, NULL);
-      switch(type_kind(t)) {
+      switch((int)type_kind(t)) {
         case IDL_STRUCT: case IDL_UNION: case IDL_EXCEPTION:
           for(hash_first(type_members(t), &i); i.current; hash_next(&i)) {
             if (type_kind(i.value) != IDL_MEMBER &&
@@ -248,8 +248,6 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
                 interp, r, Tcl_NewStringObj(type_genref(i.value), -1));
           }
           break;
-
-        default: break;
       }
       break;
     }
@@ -307,14 +305,12 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
      * for `typedef`.
      */
     case typeidx_type:
-      switch(type_kind(t)) {
+      switch((int)type_kind(t)) {
 	case IDL_ENUMERATOR: case IDL_SEQUENCE: case IDL_OPTIONAL:
         case IDL_ARRAY: case IDL_CONST: case IDL_TYPEDEF: case IDL_MEMBER:
         case IDL_CASE: case IDL_FORWARD_STRUCT: case IDL_FORWARD_UNION:
 	  r = Tcl_NewStringObj(type_genref(type_type(t)), -1);
 	  break;
-
-	default: r = NULL; break;
       }
       break;
 
@@ -325,14 +321,12 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
      * Return the length of an `array`, `sequence` or `string` type.
      */
     case typeidx_length:
-      switch(type_kind(t)) {
+      switch((int)type_kind(t)) {
 	case IDL_SEQUENCE: case IDL_ARRAY: case IDL_STRING:
 	  if (type_length(t) != -1U) {
 	    r = Tcl_NewIntObj(type_length(t));
 	    break;
 	  }
-
-	default: break;
       }
       break;
 
@@ -343,7 +337,7 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
      * Return the value associated with a `const` type.
      */
     case typeidx_value:
-      switch(type_kind(t)) {
+      switch((int)type_kind(t)) {
 	case IDL_CONST:
 	  r = Tcl_NewStringObj(const_strval(type_constvalue(t)), -1);
 	  break;
@@ -359,8 +353,6 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
           }
           break;
         }
-
-	default: r = NULL; break;
       }
       break;
 
@@ -371,12 +363,10 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
      * Return the nature of the value associated with a `const` type.
      */
     case typeidx_valuekind:
-      switch(type_kind(t)) {
-	case IDL_CONST:
-	  r = Tcl_NewStringObj(const_strkind(type_constvalue(t).k), -1);
-	  break;
-
-	default: r = NULL; break;
+      switch((int)type_kind(t)) {
+        case IDL_CONST:
+          r = Tcl_NewStringObj(const_strkind(type_constvalue(t).k), -1);
+          break;
       }
       break;
 
@@ -398,12 +388,10 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
      * Return the discriminator of the given `union`.
      */
     case typeidx_discriminator:
-      switch(type_kind(t)) {
-	case IDL_UNION:
-	  r = Tcl_NewStringObj(type_genref(type_discriminator(t)), -1);
-	  break;
-
-	default: r = NULL; break;
+      switch((int)type_kind(t)) {
+        case IDL_UNION:
+          r = Tcl_NewStringObj(type_genref(type_discriminator(t)), -1);
+          break;
       }
       break;
 
@@ -414,12 +402,10 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
      * Return the port object referenced by the given `port`.
      */
     case typeidx_port:
-      switch(type_kind(t)) {
+      switch((int)type_kind(t)) {
         case IDL_PORT:
           r = Tcl_NewStringObj(port_genref(type_port(t)), -1);
           break;
-
-        default: r = NULL; break;
       }
       break;
 
@@ -430,12 +416,10 @@ type_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
      * Return the remote object referenced by the given `remote`.
      */
     case typeidx_remote:
-      switch(type_kind(t)) {
+      switch((int)type_kind(t)) {
         case IDL_REMOTE:
           r = Tcl_NewStringObj(remote_genref(type_remote(t)), -1);
           break;
-
-        default: r = NULL; break;
       }
       break;
 

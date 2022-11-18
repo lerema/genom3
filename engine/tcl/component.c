@@ -387,7 +387,7 @@ comp_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
       /* tasks */
       for(hash_first(comp_tasks(c), &i); i.current; hash_next(&i)) {
         for(hash_first(task_props(i.value), &j); j.current; hash_next(&j)) {
-          switch (prop_kind(j.value)) {
+          switch ((int)prop_kind(j.value)) {
             case PROP_VALIDATE: k = 1; break;
             case PROP_SIMPLE_CODEL: k = 2; break;
             case PROP_FSM_CODEL: k = 4; break;
@@ -403,7 +403,7 @@ comp_cmd(ClientData v, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
       /* services */
       for(hash_first(comp_services(c), &i); i.current; hash_next(&i)) {
         for(hash_first(service_props(i.value), &j); j.current; hash_next(&j)) {
-          switch (prop_kind(j.value)) {
+          switch ((int)prop_kind(j.value)) {
             case PROP_VALIDATE: k = 1; break;
             case PROP_SIMPLE_CODEL: k = 2; break;
             case PROP_FSM_CODEL: k = 4; break;

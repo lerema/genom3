@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2015 LAAS/CNRS
+ * Copyright (c) 2009-2015,2022 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -796,15 +796,14 @@ type_next(hiter *i)
   switch(type_kind(i->value)) {
     case IDL_MEMBER: case IDL_CASE:
       do {
-	if (!scope_nextype(i)) return NULL;
-	t = i->value;
+        if (!scope_nextype(i)) return NULL;
+        t = i->value;
       } while (type_kind(t) != IDL_MEMBER && type_kind(t) != IDL_CASE);
-      break;
+      return t;
 
     case IDL_ENUMERATOR:
       if (hash_next(i)) return NULL;
-      t = i->value;
-      break;
+      return i->value;
 
     case IDL_BOOL: case IDL_USHORT: case IDL_SHORT: case IDL_ULONG:
     case IDL_LONG: case IDL_ULONGLONG: case IDL_LONGLONG: case IDL_FLOAT:
@@ -812,12 +811,12 @@ type_next(hiter *i)
     case IDL_ANY: case IDL_ENUM: case IDL_ARRAY: case IDL_SEQUENCE:
     case IDL_OPTIONAL: case IDL_STRUCT: case IDL_UNION: case IDL_EXCEPTION:
     case IDL_EVENT: case IDL_PAUSE_EVENT: case IDL_PORT: case IDL_REMOTE:
-    case IDL_NATIVE: case IDL_CONST: case IDL_TYPEDEF: case IDL_FORWARD_STRUCT:
-    case IDL_FORWARD_UNION:
+    case IDL_NATIVE: case IDL_CONST: case IDL_TYPEDEF:
+    case IDL_FORWARD_STRUCT: case IDL_FORWARD_UNION:
       i->current = NULL; return NULL;
-  }
+    }
 
-  return t;
+  assert(0); abort();
 }
 
 
@@ -863,19 +862,24 @@ type_parent(idltype_s t)
   scope_s p;
   assert(s);
 
-  switch(type_kind(t)) {
+  switch(type_kind(t)) { nodefault;
     case IDL_ENUM: case IDL_STRUCT: case IDL_UNION: case IDL_EXCEPTION:
-      break;
+      if (scope_kind(s) == SCOPE_MODULE) return NULL;
+      p = scope_parent(s);
+      if (!p) return NULL;
 
-    default:
+      return scope_findtype(p, scope_name(s));
+
+    case IDL_BOOL: case IDL_USHORT: case IDL_SHORT: case IDL_ULONG:
+    case IDL_LONG: case IDL_ULONGLONG: case IDL_LONGLONG: case IDL_FLOAT:
+    case IDL_DOUBLE: case IDL_CHAR: case IDL_OCTET: case IDL_STRING:
+    case IDL_ANY: case IDL_ENUMERATOR: case IDL_ARRAY: case IDL_SEQUENCE:
+    case IDL_OPTIONAL: case IDL_EVENT: case IDL_PAUSE_EVENT:
+    case IDL_PORT: case IDL_REMOTE: case IDL_NATIVE:
+    case IDL_CASE: case IDL_TYPEDEF: case IDL_FORWARD_STRUCT:
+    case IDL_FORWARD_UNION: case IDL_CONST: case IDL_MEMBER:
       return NULL;
   }
-
-  if (scope_kind(s) == SCOPE_MODULE) return NULL;
-  p = scope_parent(s);
-  if (!p) return NULL;
-
-  return scope_findtype(p, scope_name(s));
 }
 
 
