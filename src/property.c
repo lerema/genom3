@@ -408,7 +408,8 @@ prop_merge(hash_s p, prop_s i, int ignore_dup)
         break;
       }
 
-      case PROP_REQUIRE: {
+      case PROP_REQUIRE:
+      case PROP_CODELS_REQUIRE: {
         clist_s n, l = prop_list(q); assert(l);
         citer k;
         for(clist_first(prop_list(i), &k); k.current; clist_next(&k)) {
