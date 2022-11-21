@@ -71,7 +71,12 @@ if test "$enable_tool" = yes; then
   AC_PROG_YACC
   set -- $YACC
   if ! command -v $1 >/dev/null; then
-     AC_MSG_FAILURE([required yacc/bison program could not be found.])
+     AC_MSG_FAILURE([required bison program could not be found.])
+  else
+    case `$YACC -V` in
+      *bison*) YACC="$YACC -Wno-yacc";;
+      *) AC_MSG_FAILURE([bison program seems incompatible.])
+    esac
   fi
 fi
 
