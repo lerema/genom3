@@ -239,7 +239,6 @@ service_create(tloc l, svckind kind, const char *name, hash_s params,
     switch(prop_kind(i.value)) {
       case PROP_SIMPLE_CODEL:
         switch(kind) {
-          case S_ATTRIBUTE:
           case S_ACTIVITY:
             parserror(l, "%s %s cannot have simple codels",
                       service_strkind(kind), name);
@@ -248,6 +247,7 @@ service_create(tloc l, svckind kind, const char *name, hash_s params,
             e = 1;
             break;
 
+          case S_ATTRIBUTE:
           case S_FUNCTION:
             break;
         }
