@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2013,2018 LAAS/CNRS
+ * Copyright (c) 2010-2013,2018,2023 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -45,6 +45,13 @@
 extern const engdescr eng_tcl;
 #endif
 
+static const engdescr *engs[] = {
+#ifdef WITH_TCL
+  &eng_tcl,
+#endif
+  NULL
+};
+
 /* default engine */
 static const engdescr *engine = NULL;
 
@@ -55,9 +62,9 @@ static char **engopts = NULL;
 static int nengopts;
 
 
-static char *	eng_findentry(const char *dir);
-static void	eng_listtmpldir(const char *base, const char *dir,
-			char ***list, int *n);
+static const engdescr *	eng_findentry(const char *dir);
+static void		eng_listtmpldir(const char *base, const char *dir,
+                                char ***list, int *n);
 
 
 /* --- eng_findtmpl -------------------------------------------------------- */
@@ -70,7 +77,7 @@ eng_findtmpl(const char *tmpl)
   char path[PATH_MAX];
   char *dirs, *dir;
   struct stat sb;
-  char *name;
+  const engdescr *e;
 
   /* if template is a regular file, this is probably a command line error */
   if (!stat(tmpl, &sb) && !(sb.st_mode & S_IFDIR)) {
@@ -96,8 +103,8 @@ eng_findtmpl(const char *tmpl)
     if (!(sb.st_mode & S_IFDIR)) continue;
 
     xwarnx("looking for template in '%s'", path);
-    name = eng_findentry(path);
-    if (name) {
+    e = eng_findentry(path);
+    if (e) {
       free(dirs);
       return string(path);
     }
@@ -112,8 +119,8 @@ eng_findtmpl(const char *tmpl)
   strlcat(path, tmpl, sizeof(path));
   if (!stat(path, &sb) && (sb.st_mode & S_IFDIR)) {
     xwarnx("looking for template in '%s'", path);
-    name = eng_findentry(path);
-    if (name) return string(path);
+    e = eng_findentry(path);
+    if (e) return string(path);
   }
 
   warnx("cannot find template '%s'", tmpl);
@@ -156,7 +163,8 @@ eng_listtmpldir(const char *base, const char *dir, char ***list, int *n)
   struct dirent *de;
   struct stat sb;
   DIR *d;
-  char *name, *prefix;
+  const engdescr *e;
+  char *prefix;
 
   /* look for template.xxx entries */
   xwarnx("searching template directory '%s'", dir);
@@ -182,14 +190,14 @@ eng_listtmpldir(const char *base, const char *dir, char ***list, int *n)
     eng_listtmpldir(ent, path, list, n);
 
     xwarnx("looking for template in '%s'", de->d_name);
-    name = eng_findentry(path);
-    if (name) {
+    e = eng_findentry(path);
+    if (e) {
       char **r;
 
       /* avoid duplicates */
       for(r = *list; r && *r; r++)
-        if (!strcmp(ent, *r)) { name = NULL; break; }
-      if (!name) continue;
+        if (!strcmp(ent, *r)) { e = NULL; break; }
+      if (!e) continue;
 
       /* push into the list */
       r = realloc(*list, (*n+2)*sizeof(char *));
@@ -212,38 +220,14 @@ eng_listtmpldir(const char *base, const char *dir, char ***list, int *n)
 int
 eng_seteng(const char *tmpl)
 {
-  const engdescr *engs[] = {
-#ifdef WITH_TCL
-    &eng_tcl,
-#endif
-    NULL
-  };
-  const engdescr *e;
-  char *name;
-
   /* look for template.xxx entry */
-  name = eng_findentry(tmpl);
-  if (!name) {
+  engine = eng_findentry(tmpl);
+  if (!engine) {
     warnx("cannot find template entry '" TMPL_SPECIAL_FILE "<engine>'");
-    return ENOENT;
-  }
-  name += strlen(TMPL_SPECIAL_FILE);
-
-  /* select engine based on file extension */
-  for(e = engs[0]; e; e++)
-    if (!strncmp(e->name, name, strlen(name))) {
-      engine = e;
-      break;
-    }
-
-  if (!e) {
-    if (name[0])
-      warnx("unknown generator engine '%s'", name);
-    else
-      warnx("no generator engine");
     return errno = ENOENT;
   }
-  xwarnx("using %s generator engine", name);
+
+  xwarnx("using %s generator engine", engine->name);
   return 0;
 }
 
@@ -306,11 +290,12 @@ eng_invoke()
 
 /** return the name of the first template.xxx file in directory
  */
-static char *
+static const engdescr *
 eng_findentry(const char *dir)
 {
+  const engdescr *e;
   struct dirent *de;
-  char *name;
+  char *ext;
   DIR *d;
 
   /* look for template.xxx entry */
@@ -321,7 +306,6 @@ eng_findentry(const char *dir)
     return NULL;
   }
 
-  name = NULL;
   while((de = readdir(d))) {
     if (strncmp(de->d_name, TMPL_SPECIAL_FILE, strlen(TMPL_SPECIAL_FILE)))
       continue;
@@ -330,11 +314,15 @@ eng_findentry(const char *dir)
       continue;
     }
 
-    xwarnx("found template entry '%s'", de->d_name);
-    name = string(de->d_name);
-    break;
+    /* check file extension */
+    ext = de->d_name + sizeof(TMPL_SPECIAL_FILE)-1;
+    for(e = engs[0]; e->name; e++)
+      if (!strncmp(e->name, ext, strlen(ext))) {
+        xwarnx("found template entry '%s'", de->d_name);
+        return e;
+      }
   }
   closedir(d);
 
-  return name;
+  return NULL;
 }
