@@ -25,7 +25,7 @@ SYNOPSIS
 --------
 *genom3* [*-l*] [*-h*] [*--version*]
 
-*genom3* [*-I* 'dir'] [*-D* 'macro[=value]'] [*-E | -n*] 'file.gen' [...]
+*genom3* [*-I* 'dir'] [*-D* 'macro=value'] [*-E | -n*] 'file.gen' [...]
 
 *genom3* ['general options'] 'template' ['template options'] 'file.gen' [...]
 
