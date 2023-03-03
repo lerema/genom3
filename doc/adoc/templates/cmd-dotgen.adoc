@@ -254,6 +254,19 @@ generate dependency information in a Makefile.
 
 
 
+`dotgen input path`::
+Return the directory from which input files are read. This corresponds to
+the -C option passed to `genom3`, or the empty string if no such option
+was given.
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2015,2017,2022 LAAS/CNRS
+ * Copyright (c) 2009-2015,2017,2022-2023 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -44,6 +44,7 @@ extern struct runopt_s {
   char tmpldir[PATH_MAX];/** genom template directory */
   char tmpdir[PATH_MAX];/** temporary directory */
   char cpppath[PATH_MAX];/** genom cpp preprocessor */
+  char dgpath[PATH_MAX];/** input file path */
 
   const char *genom;	/** Executable path */
   const char *cmdline;	/** Relevant options to genom to register */

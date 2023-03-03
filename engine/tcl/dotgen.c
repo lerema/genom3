@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2014,2017,2020,2022 LAAS/CNRS
+ * Copyright (c) 2010-2014,2017,2020,2022-2023 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -246,6 +246,19 @@ dg_input_deps(ClientData v, Tcl_Interp *interp, int objc,
     }
   }
   Tcl_SetObjResult(interp, d);
+  return TCL_OK;
+}
+
+/*/ `dotgen input path`::
+ * Return the directory from which input files are read. This corresponds to
+ * the -C option passed to `genom3`, or the empty string if no such option
+ * was given.
+ */
+int
+dg_input_path(ClientData v, Tcl_Interp *interp, int objc,
+              Tcl_Obj *const objv[])
+{
+  Tcl_SetObjResult(interp, Tcl_NewStringObj(runopt.dgpath, -1));
   return TCL_OK;
 }
 

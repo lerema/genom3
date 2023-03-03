@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012,2017-2018,2022 LAAS/CNRS
+ * Copyright (c) 2009-2012,2017-2018,2022-2023 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -24,6 +24,7 @@
 #include "acgenom.h"
 
 #include <sys/param.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -87,6 +88,7 @@ cpp_invoke(char *in[], int out)
   char *cpp, *p;
   int noptexec;
   FILE *infile;
+  int cwd;
   int s, n;
 
   /* get cpp executable */
@@ -127,12 +129,29 @@ cpp_invoke(char *in[], int out)
     errno = EIO; goto err;
   }
 
+  /* temporarily change to -C directory */
+  if (*runopt.dgpath) {
+    cwd = open(".", O_RDONLY);
+    if (cwd < 0) { warn("cannot open directory '.'"); goto err; }
+    if (chdir(runopt.dgpath)) { warn("%s", runopt.dgpath); goto err; }
+    xwarnx("changed directory to '%s'", runopt.dgpath);
+  } else cwd = -1;
+
+  /* resolve all input files */
   for(; *in; in++) {
     char rpath[PATH_MAX];
 
     if (!realpath(*in, rpath)) { warn("%s", *in); goto err; }
 
     fprintf(infile, "#include \"%s\"\n", rpath);
+    xwarnx("resolved '%s' as '%s'", *in, rpath);
+  }
+
+  /* undo -C */
+  if (cwd >= 0) {
+    if (fchdir(cwd)) { warn("cannot chdir '.'"); goto err; }
+    close(cwd);
+    xwarnx("changed directory to '.'");
   }
 
   fclose(infile);
@@ -205,10 +224,25 @@ cpp_getnotice(const char *in)
   char *line;
   size_t l;
   char *p, *w;
+  int cwd;
   int inside;
+
+  /* temporarily change to -C directory */
+  if (*runopt.dgpath) {
+    cwd = open(".", O_RDONLY);
+    if (cwd < 0) return NULL;
+    if (chdir(runopt.dgpath)) return NULL;
+    xwarnx("changed directory to '%s'", runopt.dgpath);
+  } else cwd = -1;
 
   f = fopen(in, "r");
   if (!f) return NULL;
+
+  if (cwd >= 0) {
+    if (fchdir(cwd)) return NULL;
+    close(cwd);
+    xwarnx("changed directory to '.'");
+  }
 
   line = NULL;
   l = 0;

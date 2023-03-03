@@ -119,6 +119,11 @@ debugging genom itself or to view the actual specification built by genom
 from a complex (set of) file(s). Any errors or warning are reported and
 genom exits with a non-zero status if there are errors.
 
+*-C*, *--directory=dir*::
+// change to directory dir before reading input files
+Change to directory dir before reading the input files. If multiple -C options
+are specified, each is interpreted relative to the previous one.
+
 *-l*, *--list*::
 // list available templates
 Print to the standard output the list of available templates, one per line.

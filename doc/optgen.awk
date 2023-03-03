@@ -1,6 +1,6 @@
 #!/usr/bin/awk -f
 #
-# Copyright (c) 2010-2012,2014 LAAS/CNRS
+# Copyright (c) 2010-2012,2014,2023 LAAS/CNRS
 # All rights reserved.
 #
 # Permission to use, copy, modify, and distribute this software for any purpose
@@ -40,7 +40,7 @@ END {
         k = split(argcomm[i], key, SUBSEP);
         for (j = 1; j < k; j+=2) {
             if (key[j] ~ /^--/) { key[j] = "    " key[j] }
-            printf("  %-18s %s\\n\\\n", key[j], key[j+1]);
+            printf("  %-19s %s\\n\\\n", key[j], key[j+1]);
         }
 
         print "\\n\\";

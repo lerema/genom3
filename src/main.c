@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2013,2017,2022 LAAS/CNRS
+ * Copyright (c) 2009-2013,2017,2022-2023 LAAS/CNRS
  * All rights reserved.
  *
  * Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -46,7 +46,7 @@ static const char *	abspath(const char *path);
 static const char *	findexec(const char *prog);
 static int		rmrfdir(const char *path);
 
-/* options strings and usage message are generated from options.txt */
+/* options strings and usage message are generated from adoc/manual.adoc */
 #include "options.c"
 
 /** runtime options */
@@ -82,6 +82,7 @@ main(int argc, char *argv[])
 
   optarg = getenv("GENOM_CPP");
   strlcpy(runopt.cpppath, optarg?optarg:CPPPATH, sizeof(runopt.cpppath));
+  runopt.dgpath[0] = '\0';
 
   xwarnx_verbosity(0);
   runopt.verbose = 0;
@@ -121,6 +122,11 @@ main(int argc, char *argv[])
 	runopt.cmdline = strings(runopt.cmdline, " ", opt, NULL);
 	break;
       }
+
+      case 'C':
+        if (*runopt.dgpath) strlcat(runopt.dgpath, "/", sizeof(runopt.dgpath));
+        strlcat(runopt.dgpath, optarg, sizeof(runopt.dgpath));
+        break;
 
       case 'T':
 	strlcpy(runopt.tmpdir, optarg, sizeof(runopt.tmpdir));
@@ -182,6 +188,11 @@ main(int argc, char *argv[])
     }
   argc -= optind;
   argv += optind;
+
+  /* remember any -C options */
+  if (*runopt.dgpath)
+    runopt.cmdline = strings(
+      runopt.cmdline, " -C ", abspath(runopt.dgpath), NULL);
 
   /* normalize tmpdir. This is important when TMPDIR or -t options are set to a
    * path that contains symlinks, because dotgen_parsehash() needs to determine
