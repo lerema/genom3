@@ -288,10 +288,82 @@ dependency information in a Makefile.
 
 
 [[template_arg]]
-=== *template arg*
+=== *template arg* [{next|files|names|components}]
 
-Return the next argument passed to the template, or raise an error is
-no argument remains.
+Process input arguments according to the optional command keyword. If no
+command is given, it defaults to `next`.
+
+.Arguments
+[horizontal]
++next+::
+Pops the next argument passed to the template, or raise an error if no
+argument remains. Mostly useful within a `template options` body.
+
++files+::
+Return a list of readable input files in the current argument list of
+the template. If no readable file exists, return the first argument
+(if any) so that ENOENT may eventually be reported by `template parse`.
+
++names+::
+Return the list of arguments that are not readable input files.
+
++components+::
+Interpret the list of arguments that are not readable input files
+(`template arg names`) as component or interface names and return the
+list of resolved objects. If none is given explicitly, the components and
+interfaces defined in input files (`template arg files`) are returned.
+
+Input files must have been parsed already by `template parse` for this
+command to return meaningful data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

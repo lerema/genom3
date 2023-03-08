@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2015,2017,2020 LAAS/CNRS
+# Copyright (c) 2010-2015,2017,2020,2023 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -283,22 +283,94 @@ namespace eval template {
 
     #/
     # [[template_arg]]
-    # === *template arg*
+    # === *template arg* [{next|files|names|components}]
     #
-    # Return the next argument passed to the template, or raise an error is
-    # no argument remains.
+    # Process input arguments according to the optional command keyword. If no
+    # command is given, it defaults to `next`.
     #
-    proc arg { } {
-	global argc argv
+    # .Arguments
+    # [horizontal]
+    # +next+::
+    # Pops the next argument passed to the template, or raise an error if no
+    # argument remains. Mostly useful within a `template options` body.
+    #
+    # +files+::
+    # Return a list of readable input files in the current argument list of
+    # the template. If no readable file exists, return the first argument
+    # (if any) so that ENOENT may eventually be reported by `template parse`.
+    #
+    # +names+::
+    # Return the list of arguments that are not readable input files.
+    #
+    # +components+::
+    # Interpret the list of arguments that are not readable input files
+    # (`template arg names`) as component or interface names and return the
+    # list of resolved objects. If none is given explicitly, the components and
+    # interfaces defined in input files (`template arg files`) are returned.
+    #
+    # Input files must have been parsed already by `template parse` for this
+    # command to return meaningful data.
+    #
+    #
+    proc arg { {opt next} } {
+      global argc argv
 
-	set optarg [lindex $argv 1]
-	if {$optarg == ""} {
-	    template fatal "missing argument to [lindex $argv 0]"
-	}
+      switch -- $opt {
+        next {
+          set optarg [lindex $argv 1]
+          if {$optarg == ""} {
+            template fatal "missing argument to [lindex $argv 0]"
+          }
 
-	set argv [lreplace $argv 1 1]
-	incr argc -1
-	return $optarg
+          set argv [lreplace $argv 1 1]
+          incr argc -1
+          return $optarg
+        }
+
+        files - names {
+          lassign {} files names
+          set path [dotgen input path]
+          foreach a $argv {
+            set f [file join $path $a]
+            lappend [expr {[file isfile $f] ? "files" : "names"}] $a
+          }
+          if {![llength $files]} {
+            # no readable file given: use first name as a file so that ENOENT
+            # is eventually reported when parsing input
+            set names [lassign $names files]
+          }
+          return [set $opt]
+        }
+
+        components {
+          set comps [lmap n [arg names] {
+            set o [list {*}[dotgen component $n] {*}[dotgen interface $n]]
+            if {![llength $o]} { template fatal "no such object $n." }
+            set o
+          }]
+
+          if {![llength $comps]} {
+            # default to components and interfaces from input files
+            set path [dotgen input path]
+            set stinputs [lmap f [arg files] {
+              file stat [file join $path $f] st
+              expr {"$st(dev)+$st(ino)"}
+            }]
+            set comps [lmap c [list {*}[dotgen components] \
+                                   {*}[dotgen interfaces]] {
+              file stat [$c loc file] st
+              if {"$st(dev)+$st(ino)" ni $stinputs} continue
+              set c
+            }]
+          }
+          return $comps
+        }
+
+        default {
+          fatal "unknown command '$opt': " \
+              "must be next, files, names or components"
+        }
+      }
     }
     namespace export arg
 

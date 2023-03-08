@@ -135,17 +135,8 @@ template options {
   -h - --help		{ puts [template usage]; exit 0 }
 }
 
-# get object list and input file list
-lassign {} cnames inputs
-foreach a $argv {
-  lappend [expr {[file readable $a] ? "inputs" : "cnames"}] $a
-}
-if {![llength $inputs]} {
-  # no readable file given: use first name as a file so that ENOENT is reported
-  set cnames [lassign $cnames inputs]
-}
-
 # process input files
+set inputs [template arg files]
 if {![llength $inputs]} { puts [template usage]; exit 2 }
 dotgen parse file {*}$inputs
 set input [file tail [lindex $inputs 0]]
@@ -180,24 +171,7 @@ if {[info exists extrefs]} {
 
 # get components to generate stubs for, default to components and interfaces
 # defined in input files
-set components [lmap n $cnames {
-  set o [list {*}[dotgen component $n] {*}[dotgen interface $n]]
-  if {![llength $o]} { error "no such object $n." }
-  set o
-}]
-
-if {![llength $components]} {
-  set stinputs [lmap f $inputs {
-    file stat $f st
-    expr {"$st(dev)+$st(ino)"}
-  }]
-  set components [lmap c [list {*}[dotgen components] {*}[dotgen interfaces]] {
-    file stat [$c loc file] st
-    if {"$st(dev)+$st(ino)" ni $stinputs} continue
-    set c
-  }]
-}
-
+set components [template arg components]
 if {![llength $components]} { error "no component or interface." }
 
 # check options consistency
