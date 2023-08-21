@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2015,2017-2018,2020,2022 LAAS/CNRS
+# Copyright (c) 2010-2015,2017-2018,2020,2022-2023 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -448,9 +448,9 @@ namespace eval language {
   # 'kind'::
   # Must be `value` or `reference`.
   #
-  proc return-value { type kind } {
+  proc return-value { type kind {var {}}} {
     variable current
-    return [${current}::return-value $type $kind]
+    return [${current}::return-value $type $kind $var]
   }
   slave alias language::return-value language::return-value
   namespace export return-value

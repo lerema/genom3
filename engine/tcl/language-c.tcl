@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2018,2020,2022 LAAS/CNRS
+# Copyright (c) 2010-2018,2020,2022-2023 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -293,20 +293,34 @@ namespace eval language::c {
 
     # Return the C mapping for declaring a returned value.
     #
-    proc return-value { type kind } {
-      switch -- $kind {
-        reference {
-          switch -- [[$type final] kind] {
-            string {
-              # handle char[] explicitly
-              if {![catch { [$type final] length }]} {
-                return "char *"
+    proc return-value { type kind {var {}}} {
+      switch -- [[$type final] kind] {
+        string {
+          # handle char[] explicitly
+          if {![catch { [$type final] length }]} {
+            switch -- $kind {
+              {value}		{ return "const char *$var" }
+              {reference}	{ return "char *$var" }
+              default		{
+                template fatal "unknown argument kind \"$kind\": " \
+                    "must be value or reference"
               }
             }
-            string - array {
-              # handle arrays[] explicitly
-              if {![catch { [$type final] length }]} {
-                return [declarator [[$type final] type] *]
+          }
+        }
+        array {
+          # handle arrays[] explicitly
+          if {![catch { [$type final] length }]} {
+            switch -- $kind {
+              {value} {
+                return "const [declarator [[$type final] type] *$var]"
+              }
+              {reference} {
+                return [declarator [[$type final] type] *$var]
+              }
+              default {
+                template fatal "unknown argument kind \"$kind\": " \
+                    "must be value or reference"
               }
             }
           }
@@ -314,7 +328,7 @@ namespace eval language::c {
       }
 
       # default to same as 'argument'
-      return [argument $type $kind]
+      return [argument $type $kind $var]
     }
 
 

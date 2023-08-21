@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2015,2018,2020 LAAS/CNRS
+# Copyright (c) 2010-2015,2018,2020,2023 LAAS/CNRS
 # All rights reserved.
 #
 # Redistribution  and  use  in  source  and binary  forms,  with  or  without
@@ -270,9 +270,9 @@ namespace eval language::c++ {
 
     # Return the C++ mapping for declaring a returned value.
     #
-    proc return-value { type kind } {
+    proc return-value { type kind {var {}}} {
       # default to same as 'argument'
-      return [argument $type $kind]
+      return [argument $type $kind $var]
     }
 
 
