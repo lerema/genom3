@@ -788,11 +788,10 @@ namespace eval language::c {
 
       set f ""
       set arg [list]
-      foreach p [$r parameters] {
+      foreach p [$r parameters in out inout] {
         switch -- [$p dir] {
           in		{ set a [[$p type] argument value [$p name]] }
           out - inout	{ set a [[$p type] argument reference [$p name]] }
-          default	{ template fatal "invalid parameter direction" }
         }
         lappend arg $a
 
